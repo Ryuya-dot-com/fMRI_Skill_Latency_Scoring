@@ -1,0 +1,97 @@
+{
+  "version": "2.0.0",
+  "verbs": {
+    "avanzar": {
+      "japanese": "電話する",
+      "sprang": "avanziando",
+      "pictureType": 1
+    },
+    "comenzas": {
+      "japanese": "笑う",
+      "sprang": "camenziando",
+      "pictureType": 2
+    },
+    "definis": {
+      "japanese": "泣く",
+      "sprang": "dofiniondo",
+      "pictureType": 3
+    },
+    "deprimir": {
+      "japanese": "走る",
+      "sprang": "deprimiondo",
+      "pictureType": 4
+    },
+    "dominas": {
+      "japanese": "食べる",
+      "sprang": "damitiando",
+      "pictureType": 5
+    },
+    "gustar": {
+      "japanese": "跳ねる",
+      "sprang": "gustiando",
+      "pictureType": 6
+    },
+    "impedir": {
+      "japanese": "歌う",
+      "sprang": "impediondo",
+      "pictureType": 7
+    },
+    "lavar": {
+      "japanese": "寝る",
+      "sprang": "laviando",
+      "pictureType": 8
+    },
+    "montas": {
+      "japanese": "咳をする",
+      "sprang": "mantiando",
+      "pictureType": 9
+    },
+    "partir": {
+      "japanese": "掃除をする",
+      "sprang": "partiondo",
+      "pictureType": 10
+    },
+    "recibis": {
+      "japanese": "踊る",
+      "sprang": "rocibiondo",
+      "pictureType": 11
+    },
+    "sentis": {
+      "japanese": "読む",
+      "sprang": "sontiondo",
+      "pictureType": 12
+    }
+  },
+  "datasets": [
+    {
+      "id": "fmri_naming",
+      "label": "fMRI Naming Task",
+      "testType": "fmri_naming",
+      "audioPath": "audio",
+      "csvPath": "csv",
+      "participants": [
+        "6001",
+        "6002",
+        "6003",
+        "6004",
+        "6005",
+        "6006",
+        "6007",
+        "6008",
+        "6009",
+        "6010",
+        "6012",
+        "6013",
+        "6014",
+        "6015",
+        "6016",
+        "6017",
+        "6018",
+        "6019",
+        "6020",
+        "6022",
+        "6023"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Old experiment data (vocabulary scoring)
+data/Results_*/
+Analysis_Latency/
+
+# Node modules (if any)
+node_modules/
+
+# Build artifacts
+data/stimulus_durations.json
