@@ -7,8 +7,8 @@ const ScoringUI = (() => {
 
   const ONSET_STATUS_LABELS = {
     confirmed: 'confirmed', corrected: 'corrected', manual: 'manual',
-    no_speech_true: '真の無発話', no_speech_technical: 'Tech Failure',
-    no_speech_nonlexical: '非語彙音のみ', no_speech: 'No Speech'
+    no_speech_true: '無発話', no_speech_technical: '機器不良',
+    no_speech_nonlexical: '非語彙音', no_speech: 'No Speech'
   };
 
   function isNoSpeechStatus(status) {

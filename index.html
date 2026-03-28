@@ -134,9 +134,9 @@
           <button id="onset-correct" class="btn btn-onset" data-status="corrected" title="Drag marker on waveform">Correct (drag)</button>
           <button id="onset-manual" class="btn btn-onset" data-status="manual" title="Click on waveform to set">Manual Set</button>
           <span class="onset-separator"></span>
-          <button id="onset-no-speech-true" class="btn btn-onset btn-onset-nospeech" data-status="no_speech_true" title="真の無発話 — 録音に発話なし (T)">真の無発話</button>
-          <button id="onset-no-speech-technical" class="btn btn-onset btn-onset-nospeech" data-status="no_speech_technical" title="Technical failure — 機材トラブル (F)">Tech Failure</button>
-          <button id="onset-no-speech-nonlexical" class="btn btn-onset btn-onset-nospeech" data-status="no_speech_nonlexical" title="咳・息・非語彙音のみ (G)">非語彙音のみ</button>
+          <button id="onset-no-speech-true" class="btn btn-onset btn-onset-nospeech" data-status="no_speech_true" title="無発話 — 録音に発話なし (T)">無発話</button>
+          <button id="onset-no-speech-technical" class="btn btn-onset btn-onset-nospeech" data-status="no_speech_technical" title="機器不良 — 機材トラブル (F)">機器不良</button>
+          <button id="onset-no-speech-nonlexical" class="btn btn-onset btn-onset-nospeech" data-status="no_speech_nonlexical" title="非語彙音 — 咳・息・舌打ちのみ (G)">非語彙音</button>
         </div>
         <div class="onset-manual-input">
           <label for="onset-ms-input">Onset (ms):</label>
@@ -206,9 +206,9 @@
           <li><strong>Confirm (C):</strong> 自動検出が正しい場合、そのまま承認</li>
           <li><strong>Correct (drag):</strong> マーカーをドラッグして位置を修正</li>
           <li><strong>Manual Set:</strong> 波形をクリックしてオンセットを手動設定</li>
-          <li><strong>真の無発話:</strong> 録音中に一切の発話がない場合</li>
-          <li><strong>Tech Failure:</strong> 機材トラブルにより録音不良の場合</li>
-          <li><strong>非語彙音のみ:</strong> 咳・息・舌打ちなど非語彙音のみの場合</li>
+          <li><strong>無発話 (T):</strong> 録音中に一切の発話がない場合</li>
+          <li><strong>機器不良 (F):</strong> 機材トラブルにより録音不良の場合</li>
+          <li><strong>非語彙音 (G):</strong> 咳・息・舌打ちなど非語彙音のみの場合</li>
         </ul>
         <h4>よくあるずれのパターン:</h4>
         <ul>
@@ -232,7 +232,7 @@
           </tr>
           <tr>
             <td class="score-cell score-nr">NR</td>
-            <td><strong>無回答:</strong> 録音に発話が含まれていない場合（真の無発話 / Tech Failure / 非語彙音のみ）</td>
+            <td><strong>無回答:</strong> 録音に発話が含まれていない場合（無発話 / 機器不良 / 非語彙音）</td>
           </tr>
         </table>
       </section>
@@ -267,9 +267,9 @@
           <tr><td>→ / Enter</td><td>次の試行</td></tr>
           <tr><td>←</td><td>前の試行</td></tr>
           <tr><td>C</td><td>オンセット確認</td></tr>
-          <tr><td>T</td><td>真の無発話（No Speech）</td></tr>
-          <tr><td>F</td><td>Tech Failure</td></tr>
-          <tr><td>G</td><td>非語彙音のみ</td></tr>
+          <tr><td>T</td><td>無発話</td></tr>
+          <tr><td>F</td><td>機器不良</td></tr>
+          <tr><td>G</td><td>非語彙音</td></tr>
           <tr><td>R</td><td>オンセット位置から再生</td></tr>
           <tr><td>N</td><td>ノート入力にフォーカス</td></tr>
           <tr><td>I</td><td>この説明パネルの表示切替</td></tr>
