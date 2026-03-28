@@ -29,12 +29,29 @@ const State = (() => {
       const data = localStorage.getItem(key(raterId, datasetId));
       if (data) {
         _state = JSON.parse(data);
+        migrateScores();
         return _state;
       }
     } catch (e) {
       console.error('Failed to load state:', e);
     }
     return null;
+  }
+
+  /** Migrate old no_speech → no_speech_true for backward compatibility */
+  function migrateScores() {
+    if (!_state || !_state.scores) return;
+    let migrated = 0;
+    for (const k of Object.keys(_state.scores)) {
+      if (_state.scores[k].onsetStatus === 'no_speech') {
+        _state.scores[k].onsetStatus = 'no_speech_true';
+        migrated++;
+      }
+    }
+    if (migrated > 0) {
+      console.log(`Migrated ${migrated} scores: no_speech → no_speech_true`);
+      save();
+    }
   }
 
   function get() { return _state; }
@@ -53,6 +70,20 @@ const State = (() => {
     if (_saveTimeout) clearTimeout(_saveTimeout);
     _saveTimeout = setTimeout(save, 500);
   }
+
+  function flushPendingSave() {
+    if (_saveTimeout) {
+      clearTimeout(_saveTimeout);
+      _saveTimeout = null;
+      save();
+    }
+  }
+
+  // Flush pending saves on page unload / tab switch
+  window.addEventListener('beforeunload', flushPendingSave);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushPendingSave();
+  });
 
   function setPosition(pIndex, tIndex) {
     if (!_state) return;
@@ -112,7 +143,7 @@ const State = (() => {
   }
 
   return {
-    create, load, get, save, debouncedSave, setPosition,
+    create, load, get, save, debouncedSave, flushPendingSave, setPosition,
     getScore, setScore, getTotalScoredCount,
     getParticipantScoredCount, isParticipantComplete,
     listSessions

@@ -116,6 +116,8 @@
         <div class="waveform-info">
           <span id="waveform-time">0.000s / 0.000s</span>
           <span id="onset-display">Onset: -- ms</span>
+          <span id="offset-display">Offset: -- ms</span>
+          <span id="duration-display">Duration: -- ms</span>
         </div>
       </div>
 
@@ -124,18 +126,25 @@
         <h3>Voice Onset Timing</h3>
         <div class="latency-info">
           <span>Auto-detected onset: <strong id="auto-onset-value">--</strong> ms</span>
+          <span>Auto-detected offset: <strong id="auto-offset-value">--</strong> ms</span>
           <span>Status: <strong id="latency-status-display">--</strong></span>
         </div>
         <div class="latency-controls">
           <button id="onset-confirm" class="btn btn-onset" data-status="confirmed" title="Confirm (C)">Confirm</button>
           <button id="onset-correct" class="btn btn-onset" data-status="corrected" title="Drag marker on waveform">Correct (drag)</button>
           <button id="onset-manual" class="btn btn-onset" data-status="manual" title="Click on waveform to set">Manual Set</button>
-          <button id="onset-no-speech" class="btn btn-onset" data-status="no_speech" title="No speech in recording">No Speech</button>
+          <span class="onset-separator"></span>
+          <button id="onset-no-speech-true" class="btn btn-onset btn-onset-nospeech" data-status="no_speech_true" title="真の無発話 — 録音に発話なし (T)">真の無発話</button>
+          <button id="onset-no-speech-technical" class="btn btn-onset btn-onset-nospeech" data-status="no_speech_technical" title="Technical failure — 機材トラブル (F)">Tech Failure</button>
+          <button id="onset-no-speech-nonlexical" class="btn btn-onset btn-onset-nospeech" data-status="no_speech_nonlexical" title="咳・息・非語彙音のみ (G)">非語彙音のみ</button>
         </div>
         <div class="onset-manual-input">
           <label for="onset-ms-input">Onset (ms):</label>
           <input type="number" id="onset-ms-input" step="0.1" min="0">
           <button id="onset-ms-apply" class="btn btn-sm">Apply</button>
+          <label for="offset-ms-input" style="margin-left:1rem">Offset (ms):</label>
+          <input type="number" id="offset-ms-input" step="0.1" min="0">
+          <button id="offset-ms-apply" class="btn btn-sm">Apply</button>
         </div>
       </div>
 
@@ -190,13 +199,16 @@
 
       <section>
         <h3>2. 発話開始点 (Voice Onset)</h3>
-        <p>録音中の発話開始点（赤いマーカー）を確認・修正してください。</p>
+        <p>録音中の発話開始点（赤いマーカー）と発話終了点（青いマーカー）を確認・修正してください。</p>
+        <p>Offset（青マーカー）は音声末尾の無音区間から自動検出されます。ドラッグまたは手動入力で修正可能です。</p>
         <h4>操作方法:</h4>
         <ul>
           <li><strong>Confirm (C):</strong> 自動検出が正しい場合、そのまま承認</li>
           <li><strong>Correct (drag):</strong> マーカーをドラッグして位置を修正</li>
           <li><strong>Manual Set:</strong> 波形をクリックしてオンセットを手動設定</li>
-          <li><strong>No Speech:</strong> 録音に発話が含まれていない場合</li>
+          <li><strong>真の無発話:</strong> 録音中に一切の発話がない場合</li>
+          <li><strong>Tech Failure:</strong> 機材トラブルにより録音不良の場合</li>
+          <li><strong>非語彙音のみ:</strong> 咳・息・舌打ちなど非語彙音のみの場合</li>
         </ul>
         <h4>よくあるずれのパターン:</h4>
         <ul>
@@ -220,7 +232,7 @@
           </tr>
           <tr>
             <td class="score-cell score-nr">NR</td>
-            <td><strong>無回答:</strong> 録音に発話が含まれていない場合</td>
+            <td><strong>無回答:</strong> 録音に発話が含まれていない場合（真の無発話 / Tech Failure / 非語彙音のみ）</td>
           </tr>
         </table>
       </section>
@@ -255,6 +267,9 @@
           <tr><td>→ / Enter</td><td>次の試行</td></tr>
           <tr><td>←</td><td>前の試行</td></tr>
           <tr><td>C</td><td>オンセット確認</td></tr>
+          <tr><td>T</td><td>真の無発話（No Speech）</td></tr>
+          <tr><td>F</td><td>Tech Failure</td></tr>
+          <tr><td>G</td><td>非語彙音のみ</td></tr>
           <tr><td>R</td><td>オンセット位置から再生</td></tr>
           <tr><td>N</td><td>ノート入力にフォーカス</td></tr>
           <tr><td>I</td><td>この説明パネルの表示切替</td></tr>
@@ -276,6 +291,9 @@
       <tr><td>&rarr; / Enter</td><td>Next trial</td></tr>
       <tr><td>&larr;</td><td>Previous trial</td></tr>
       <tr><td>C</td><td>Confirm onset</td></tr>
+      <tr><td>T</td><td>No speech (true)</td></tr>
+      <tr><td>F</td><td>Tech failure</td></tr>
+      <tr><td>G</td><td>Non-lexical only</td></tr>
       <tr><td>R</td><td>Play from onset</td></tr>
       <tr><td>N</td><td>Focus notes</td></tr>
       <tr><td>I</td><td>Toggle instructions</td></tr>

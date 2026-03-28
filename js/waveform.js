@@ -8,10 +8,13 @@ const WaveformViewer = (() => {
   let minimapPlugin = null;
   let timelinePlugin = null;
   let onsetRegion = null;
+  let offsetRegion = null;
   let referenceRegion = null;
   let _onOnsetChanged = null;
   let _clickToSetEnabled = false;
   let _currentOnsetMs = null;
+  let _currentOffsetMs = null;
+  let _autoDetectedOffsetMs = null;
 
   // Zoom state
   let _zoomLevel = 1;
@@ -140,6 +143,8 @@ const WaveformViewer = (() => {
     clearMarkers();
     _clickToSetEnabled = false;
     _currentOnsetMs = null;
+    _currentOffsetMs = null;
+    _autoDetectedOffsetMs = null;
     _zoomLevel = 1;
     updateZoomDisplay();
 
@@ -147,6 +152,8 @@ const WaveformViewer = (() => {
       wavesurfer.once('ready', () => {
         updateTimeDisplay();
         applyZoom();
+        // Auto-detect offset from audio buffer
+        _autoDetectedOffsetMs = detectOffset();
         resolve();
       });
       wavesurfer.once('error', (err) => reject(err));
@@ -161,6 +168,7 @@ const WaveformViewer = (() => {
       regionsPlugin.clearRegions();
     }
     onsetRegion = null;
+    offsetRegion = null;
     referenceRegion = null;
   }
 
@@ -190,10 +198,12 @@ const WaveformViewer = (() => {
       const newMs = onsetRegion.start * 1000;
       _currentOnsetMs = newMs;
       updateOnsetDisplay(newMs);
+      updateDurationDisplay();
       if (_onOnsetChanged) _onOnsetChanged(newMs, 'corrected');
     });
 
     updateOnsetDisplay(onsetMs);
+    updateDurationDisplay();
   }
 
   function setReferenceMarker(ms, label) {
@@ -222,6 +232,91 @@ const WaveformViewer = (() => {
     if (input && ms != null) input.value = ms.toFixed(1);
   }
 
+  // ── Offset Detection & Marker ──
+
+  function detectOffset() {
+    if (!wavesurfer) return null;
+    const backend = wavesurfer.getDecodedData();
+    if (!backend || backend.numberOfChannels === 0) return null;
+
+    const data = backend.getChannelData(0);
+    const sampleRate = backend.sampleRate;
+    const windowSamples = Math.floor(sampleRate * 0.01); // 10ms window
+    const threshold = 0.01;
+
+    // Scan from end backwards to find last sample above threshold
+    for (let i = data.length - windowSamples; i >= 0; i -= windowSamples) {
+      let sumSq = 0;
+      for (let j = i; j < i + windowSamples && j < data.length; j++) {
+        sumSq += data[j] * data[j];
+      }
+      const rms = Math.sqrt(sumSq / windowSamples);
+      if (rms > threshold) {
+        // Found signal — offset is end of this window
+        const offsetMs = ((i + windowSamples) / sampleRate) * 1000;
+        return offsetMs;
+      }
+    }
+    return null;
+  }
+
+  function setOffsetMarker(ms) {
+    if (offsetRegion) {
+      offsetRegion.remove();
+      offsetRegion = null;
+    }
+
+    if (ms == null || isNaN(ms)) {
+      _currentOffsetMs = null;
+      updateOffsetDisplay(null);
+      return;
+    }
+
+    _currentOffsetMs = ms;
+    const duration = wavesurfer.getDuration();
+    const startSec = ms / 1000;
+
+    if (startSec > duration) return;
+
+    offsetRegion = regionsPlugin.addRegion({
+      start: startSec,
+      end: Math.min(startSec + 0.005, duration),
+      color: 'rgba(50, 50, 255, 0.8)',
+      drag: true,
+      resize: false
+    });
+
+    offsetRegion.on('update-end', () => {
+      const newMs = offsetRegion.start * 1000;
+      _currentOffsetMs = newMs;
+      updateOffsetDisplay(newMs);
+      updateDurationDisplay();
+    });
+
+    updateOffsetDisplay(ms);
+    updateDurationDisplay();
+  }
+
+  function updateOffsetDisplay(ms) {
+    const el = document.getElementById('offset-display');
+    if (el) el.textContent = ms != null ? `Offset: ${ms.toFixed(1)} ms` : 'Offset: -- ms';
+    const input = document.getElementById('offset-ms-input');
+    if (input && ms != null) input.value = ms.toFixed(1);
+  }
+
+  function updateDurationDisplay() {
+    const el = document.getElementById('duration-display');
+    if (!el) return;
+    if (_currentOnsetMs != null && _currentOffsetMs != null) {
+      const dur = _currentOffsetMs - _currentOnsetMs;
+      el.textContent = `Duration: ${dur.toFixed(1)} ms`;
+      el.style.color = dur < 0 ? '#e74c3c' : '';
+    } else {
+      el.textContent = 'Duration: -- ms';
+      el.style.color = '';
+    }
+  }
+
   function enableClickToSet(enabled) {
     _clickToSetEnabled = enabled;
     const container = document.querySelector(containerEl);
@@ -247,6 +342,8 @@ const WaveformViewer = (() => {
 
   function isPlaying() { return wavesurfer ? wavesurfer.isPlaying() : false; }
   function getCurrentOnsetMs() { return _currentOnsetMs; }
+  function getCurrentOffsetMs() { return _currentOffsetMs; }
+  function getAutoDetectedOffsetMs() { return _autoDetectedOffsetMs; }
 
   function onOnsetChanged(fn) { _onOnsetChanged = fn; }
 
@@ -257,9 +354,10 @@ const WaveformViewer = (() => {
   }
 
   return {
-    init, loadAudio, setOnsetMarker, setReferenceMarker, clearMarkers,
+    init, loadAudio, setOnsetMarker, setOffsetMarker, setReferenceMarker, clearMarkers,
     enableClickToSet, play, stop, playFromOnset, setPlaybackRate,
-    isPlaying, getCurrentOnsetMs, onOnsetChanged, updateOnsetDisplay,
+    isPlaying, getCurrentOnsetMs, getCurrentOffsetMs, getAutoDetectedOffsetMs,
+    onOnsetChanged, updateOnsetDisplay, updateOffsetDisplay, updateDurationDisplay,
     zoomIn, zoomOut, zoomReset, destroy
   };
 })();

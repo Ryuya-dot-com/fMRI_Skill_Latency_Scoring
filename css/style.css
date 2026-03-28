@@ -360,6 +360,11 @@ body {
 .latency-controls { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .btn-onset { font-size: 13px; padding: 6px 12px; }
 .btn-onset.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.onset-separator { display: inline-block; width: 1px; height: 24px; background: var(--border); margin: 0 4px; align-self: center; }
+.btn-onset-nospeech { border-color: #666; color: var(--text-muted); font-size: 12px; }
+.btn-onset-nospeech[data-status="no_speech_true"].active { background: #6c757d; border-color: #6c757d; color: #fff; }
+.btn-onset-nospeech[data-status="no_speech_technical"].active { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn-onset-nospeech[data-status="no_speech_nonlexical"].active { background: var(--warning); border-color: var(--warning); color: #fff; }
 .onset-manual-input {
   display: flex;
   align-items: center;

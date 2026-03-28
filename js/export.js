@@ -17,14 +17,30 @@ const Export = (() => {
         participant_id: participant.id,
         trial: trial.trial,
         session: trial.session,
+        session_trial: trial.sessionTrial != null ? trial.sessionTrial : '',
+        trial_index: trial.trialIndex != null ? trial.trialIndex : '',
+        trial_type: trial.trialType || '',
         picture_type: trial.pictureType,
         picture_label: trial.pictureLabel,
         sprang_form: trial.sprangForm,
+        suffix: trial.suffix || '',
+        suffix_label: trial.suffixLabel || '',
+        rule_type: trial.ruleType || '',
+        rule_id: trial.ruleId != null ? trial.ruleId : '',
+        stim_onset_s: trial.stimOnsetS != null ? trial.stimOnsetS : '',
+        stim_duration_s: trial.stimDurationS != null ? trial.stimDurationS : '',
         repetition: trial.repetition,
         total_repetition: trial.totalRepetition,
+        item_repetition: trial.itemRepetition != null ? trial.itemRepetition : '',
+        rule_repetition: trial.ruleRepetition != null ? trial.ruleRepetition : '',
         accuracy_score: score.accuracy != null ? score.accuracy : '',
         onset_ms_rater: (!isNR && score.onsetMs != null) ? Math.round(score.onsetMs * 1000) / 1000 : '',
         onset_status: score.onsetStatus || '',
+        offset_ms_rater: (!isNR && score.offsetMs != null) ? Math.round(score.offsetMs * 1000) / 1000 : '',
+        audio_file: trial.audioFile || '',
+        recording_duration_s: trial.recordingDurationS != null ? trial.recordingDurationS : '',
+        duration_for_fmri_s: trial.durationForFmriS != null ? trial.durationForFmriS : '',
+        log_file: trial.logFile || '',
         jitter_ms: trial.jitterMs != null ? trial.jitterMs : '',
         notes: score.notes || '',
         scored_at: score.scoredAt || ''
@@ -54,11 +70,11 @@ const Export = (() => {
     overlay.className = 'export-popup-overlay';
     overlay.innerHTML = `
       <div class="export-popup">
-        <h3>Participant ${participant.id} 採点完了</h3>
-        <p>全${participant.trials.length}試行の採点が完了しました。結果をダウンロードしますか？</p>
+        <h3>Participant ${participant.id} Complete</h3>
+        <p>All ${participant.trials.length} trials scored. Download results?</p>
         <div class="export-popup-buttons">
           <button class="btn btn-primary export-popup-download">Download .xlsx</button>
-          <button class="btn export-popup-skip">スキップ</button>
+          <button class="btn export-popup-skip">Skip</button>
         </div>
       </div>
     `;
@@ -80,12 +96,14 @@ const Export = (() => {
     if (!state) return;
 
     const headers = [
-      'rater_id', 'participant_id', 'trial', 'session',
-      'picture_type', 'picture_label', 'sprang_form',
-      'repetition', 'total_repetition',
-      'accuracy_score', 'onset_ms_rater', 'onset_status',
-      'jitter_ms',
-      'notes', 'scored_at'
+      'rater_id', 'participant_id', 'trial', 'session', 'session_trial',
+      'trial_index', 'trial_type', 'picture_type', 'picture_label', 'sprang_form',
+      'suffix', 'suffix_label', 'rule_type', 'rule_id',
+      'stim_onset_s', 'stim_duration_s',
+      'repetition', 'total_repetition', 'item_repetition', 'rule_repetition',
+      'accuracy_score', 'onset_ms_rater', 'onset_status', 'offset_ms_rater',
+      'audio_file', 'recording_duration_s', 'duration_for_fmri_s', 'log_file',
+      'jitter_ms', 'notes', 'scored_at'
     ];
 
     const csvRows = [headers.join(',')];
@@ -102,23 +120,11 @@ const Export = (() => {
 
       const rows = generateParticipantRows(participant, dataset, state);
       for (const row of rows) {
-        csvRows.push([
-          escapeCSV(row.rater_id),
-          escapeCSV(row.participant_id),
-          row.trial,
-          row.session,
-          row.picture_type,
-          escapeCSV(row.picture_label),
-          escapeCSV(row.sprang_form),
-          row.repetition,
-          row.total_repetition,
-          row.accuracy_score !== '' ? row.accuracy_score : '',
-          row.onset_ms_rater !== '' ? row.onset_ms_rater : '',
-          escapeCSV(row.onset_status),
-          row.jitter_ms !== '' ? row.jitter_ms : '',
-          escapeCSV(row.notes),
-          escapeCSV(row.scored_at)
-        ].join(','));
+        csvRows.push(headers.map(h => {
+          const val = row[h];
+          if (val === '' || val == null) return '';
+          return escapeCSV(String(val));
+        }).join(','));
       }
     }
 
@@ -152,7 +158,9 @@ const Export = (() => {
   }
 
   function downloadBlob(content, filename, mimeType) {
-    const blob = new Blob([content], { type: mimeType });
+    // Add UTF-8 BOM for CSV/text files to prevent mojibake in Excel
+    const bom = (mimeType === 'text/csv') ? '\uFEFF' : '';
+    const blob = new Blob([bom + content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

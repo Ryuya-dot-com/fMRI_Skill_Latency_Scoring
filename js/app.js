@@ -304,6 +304,21 @@ const App = (() => {
       } else {
         WaveformViewer.updateOnsetDisplay(null);
       }
+
+      // Set offset marker from saved score or auto-detection
+      const autoOffset = WaveformViewer.getAutoDetectedOffsetMs();
+      const autoOffsetEl = document.getElementById('auto-offset-value');
+      if (autoOffsetEl) {
+        autoOffsetEl.textContent = autoOffset != null ? autoOffset.toFixed(1) : 'N/A';
+      }
+
+      if (existingScore && existingScore.offsetMs != null) {
+        WaveformViewer.setOffsetMarker(existingScore.offsetMs);
+      } else if (autoOffset != null) {
+        WaveformViewer.setOffsetMarker(autoOffset);
+      } else {
+        WaveformViewer.updateOffsetDisplay(null);
+      }
     } catch (e) {
       if (generation === _loadGeneration) {
         console.error('Failed to load audio:', e);
@@ -385,6 +400,18 @@ const App = (() => {
         case 'c':
         case 'C':
           ScoringUI.confirmOnset();
+          break;
+        case 't':
+        case 'T':
+          ScoringUI.handleOnsetAction('no_speech_true');
+          break;
+        case 'f':
+        case 'F':
+          ScoringUI.handleOnsetAction('no_speech_technical');
+          break;
+        case 'g':
+        case 'G':
+          ScoringUI.handleOnsetAction('no_speech_nonlexical');
           break;
         case 'r':
         case 'R':

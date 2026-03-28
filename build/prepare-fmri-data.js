@@ -23,6 +23,7 @@ const { execSync } = require('child_process');
 const PROJ_ROOT = path.resolve(__dirname, '../../');
 const DATA_AUDIO = path.join(PROJ_ROOT, 'Data_Audio');
 const STIMULI_SRC = path.join(PROJ_ROOT, '../Presentation/Stimuli');
+const ANALYSIS_EVENTS = path.join(__dirname, '..', 'Analysis_Latency', 'analysis_events_table.csv');
 const SITE_ROOT = path.resolve(__dirname, '..');
 const DATA_OUT = path.join(SITE_ROOT, 'data');
 
@@ -49,6 +50,40 @@ const VERBS = {
 const PICTURE_TYPE_TO_LABEL = {};
 for (const [label, info] of Object.entries(VERBS)) {
   PICTURE_TYPE_TO_LABEL[info.pictureType] = label;
+}
+
+// ── Analysis events table ──
+
+function parseCSVFile(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).map(line => {
+    const values = line.split(',');
+    const row = {};
+    headers.forEach((h, i) => { row[h] = (values[i] || '').trim(); });
+    return row;
+  });
+}
+
+/**
+ * Load analysis_events_table.csv and index by subject_id + global_trial.
+ * Returns a Map: "pid_trial" → row object with all columns.
+ */
+function loadAnalysisEvents() {
+  if (!fs.existsSync(ANALYSIS_EVENTS)) {
+    console.warn(`  WARNING: analysis_events_table.csv not found at ${ANALYSIS_EVENTS}`);
+    return null;
+  }
+  const text = fs.readFileSync(ANALYSIS_EVENTS, 'utf-8');
+  const rows = parseCSVFile(text);
+  const map = new Map();
+  for (const row of rows) {
+    const key = `${row.subject_id}_${row.global_trial}`;
+    map.set(key, row);
+  }
+  console.log(`Loaded ${rows.length} rows from analysis_events_table.csv`);
+  return map;
 }
 
 // ── Utility functions ──
@@ -138,7 +173,7 @@ function buildAudioFileMap(srcDirPath) {
 
 // ── Main processing ──
 
-function processParticipant(dirName) {
+function processParticipant(dirName, analysisEvents) {
   const pid = dirName.replace('Results_', '');
   const srcDirPath = path.join(DATA_AUDIO, dirName);
   const prefix = detectFilePrefix(srcDirPath, pid);
@@ -186,14 +221,33 @@ function processParticipant(dirName) {
     // Get actual audio filename from disk
     const audioFile = audioFileMap[trialNum] || `${prefix}_${String(trialNum).padStart(3, '0')}_${pictureLabel}.wav`;
 
+    // Enrich with analysis events data if available
+    const evKey = `${pid}_${trialNum}`;
+    const ev = analysisEvents ? analysisEvents.get(evKey) : null;
+
     return {
       trial: trialNum,
       session,
+      session_trial: ev ? parseInt(ev.session_trial) : ((trialNum - 1) % TRIALS_PER_SESSION) + 1,
+      trial_index: ev ? ev.trial_index : '',
+      trial_type: ev ? ev.trial_type : '',
       picture_type: pictureType,
       picture_label: pictureLabel,
       sprang_form: sprangForm,
+      suffix: ev ? ev.suffix : '',
+      suffix_label: ev ? ev.suffix_label : '',
+      rule_type: ev ? ev.rule_type : '',
+      rule_id: ev ? ev.rule_id : '',
+      stim_onset_s: ev ? ev.stim_onset_s : '',
+      stim_duration_s: ev ? ev.stim_duration_s : '',
+      repetition: 0, // computed below
       total_repetition: totalRep,
+      item_repetition: ev ? ev.item_repetition : '',
+      rule_repetition: ev ? ev.rule_repetition : '',
       audio_file: audioFile,
+      recording_duration_s: ev ? ev.recording_duration_s : '',
+      duration_for_fmri_s: ev ? ev.duration_for_fmri_s : '',
+      log_file: ev ? ev.log_file : '',
       jitter_ms: jitterMs
     };
   });
@@ -212,13 +266,17 @@ function processParticipant(dirName) {
   fs.mkdirSync(csvOutDir, { recursive: true });
   const csvOutPath = path.join(csvOutDir, `results_${pid}.csv`);
 
-  const headers = 'trial,session,picture_type,picture_label,sprang_form,repetition,total_repetition,audio_file,jitter_ms';
+  const headers = 'trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sprang_form,suffix,suffix_label,rule_type,rule_id,stim_onset_s,stim_duration_s,repetition,total_repetition,item_repetition,rule_repetition,audio_file,recording_duration_s,duration_for_fmri_s,log_file,jitter_ms';
   const csvLines = [headers];
   for (const t of trials) {
     csvLines.push([
-      t.trial, t.session, t.picture_type, t.picture_label,
-      t.sprang_form, t.repetition, t.total_repetition,
-      t.audio_file, t.jitter_ms
+      t.trial, t.session, t.session_trial, t.trial_index, t.trial_type,
+      t.picture_type, t.picture_label, t.sprang_form,
+      t.suffix, t.suffix_label, t.rule_type, t.rule_id,
+      t.stim_onset_s, t.stim_duration_s,
+      t.repetition, t.total_repetition, t.item_repetition, t.rule_repetition,
+      t.audio_file, t.recording_duration_s, t.duration_for_fmri_s,
+      t.log_file, t.jitter_ms
     ].join(','));
   }
   fs.writeFileSync(csvOutPath, csvLines.join('\n') + '\n');
@@ -267,6 +325,9 @@ function main() {
     }
   }
 
+  // Load analysis events table for enrichment
+  const analysisEvents = loadAnalysisEvents();
+
   const participantDirs = getParticipantDirs(DATA_AUDIO);
   console.log(`Found ${participantDirs.length} participant directories\n`);
 
@@ -276,7 +337,7 @@ function main() {
 
   for (const dirName of participantDirs) {
     console.log(`Processing: ${dirName}`);
-    const result = processParticipant(dirName);
+    const result = processParticipant(dirName, analysisEvents);
     if (result) {
       participantIds.push(result.pid);
       totalTrials += result.trialCount;
