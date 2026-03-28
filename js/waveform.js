@@ -182,7 +182,12 @@ const WaveformViewer = (() => {
       onsetRegion = null;
     }
 
-    if (onsetMs == null || isNaN(onsetMs)) return;
+    if (onsetMs == null || isNaN(onsetMs)) {
+      _currentOnsetMs = null;
+      updateOnsetDisplay(null);
+      updateDurationDisplay();
+      return;
+    }
 
     _currentOnsetMs = onsetMs;
     const duration = wavesurfer.getDuration();

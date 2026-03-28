@@ -298,14 +298,14 @@ const App = (() => {
       // Set 4-second reference marker (picture display duration)
       WaveformViewer.setReferenceMarker(4000);
 
-      // Set onset marker from saved score or auto-detection
+      // Set onset marker from saved score, auto-detection, or default (0ms)
       const existingScore = State.getScore(participant.id, trial.trial);
       if (existingScore && existingScore.onsetMs != null) {
         WaveformViewer.setOnsetMarker(existingScore.onsetMs);
       } else if (trial.onset_ms_from_recording_start != null) {
         WaveformViewer.setOnsetMarker(trial.onset_ms_from_recording_start);
       } else {
-        WaveformViewer.updateOnsetDisplay(null);
+        WaveformViewer.setOnsetMarker(0);
       }
 
       // Set offset marker from saved score or auto-detection

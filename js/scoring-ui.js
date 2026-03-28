@@ -208,6 +208,12 @@ const ScoringUI = (() => {
       WaveformViewer.enableClickToSet(false);
     }
 
+    // Remove onset/offset markers when No Speech is selected
+    if (isNoSpeechStatus(status)) {
+      WaveformViewer.setOnsetMarker(null);
+      WaveformViewer.setOffsetMarker(null);
+    }
+
     // Update status display
     const statusEl = document.getElementById('latency-status-display');
     if (statusEl) {
