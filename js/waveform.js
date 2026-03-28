@@ -11,7 +11,8 @@ const WaveformViewer = (() => {
   let offsetRegion = null;
   let referenceRegion = null;
   let _onOnsetChanged = null;
-  let _clickToSetEnabled = false;
+  let _onOffsetChanged = null;
+  let _clickToSetMode = null; // null | 'onset' | 'offset'
   let _currentOnsetMs = null;
   let _currentOffsetMs = null;
   let _autoDetectedOffsetMs = null;
@@ -78,10 +79,13 @@ const WaveformViewer = (() => {
     wavesurfer.on('audioprocess', updateTimeDisplay);
     wavesurfer.on('seeking', updateTimeDisplay);
     wavesurfer.on('interaction', (time) => {
-      if (_clickToSetEnabled) {
-        const clickMs = time * 1000;
+      const clickMs = time * 1000;
+      if (_clickToSetMode === 'onset') {
         setOnsetMarker(clickMs);
         if (_onOnsetChanged) _onOnsetChanged(clickMs, 'manual');
+      } else if (_clickToSetMode === 'offset') {
+        setOffsetMarker(clickMs);
+        if (_onOffsetChanged) _onOffsetChanged(clickMs);
       }
     });
 
@@ -141,7 +145,7 @@ const WaveformViewer = (() => {
   async function loadAudio(url) {
     if (!wavesurfer) init();
     clearMarkers();
-    _clickToSetEnabled = false;
+    _clickToSetMode = null;
     _currentOnsetMs = null;
     _currentOffsetMs = null;
     _autoDetectedOffsetMs = null;
@@ -320,11 +324,14 @@ const WaveformViewer = (() => {
     }
   }
 
-  function enableClickToSet(enabled) {
-    _clickToSetEnabled = enabled;
+  /**
+   * @param {string|false} mode - 'onset', 'offset', or false to disable
+   */
+  function enableClickToSet(mode) {
+    _clickToSetMode = mode || null;
     const container = document.querySelector(containerEl);
     if (container) {
-      container.style.cursor = enabled ? 'crosshair' : 'default';
+      container.style.cursor = mode ? 'crosshair' : 'default';
     }
   }
 
@@ -349,6 +356,7 @@ const WaveformViewer = (() => {
   function getAutoDetectedOffsetMs() { return _autoDetectedOffsetMs; }
 
   function onOnsetChanged(fn) { _onOnsetChanged = fn; }
+  function onOffsetChanged(fn) { _onOffsetChanged = fn; }
 
   function destroy() {
     if (wavesurfer) { wavesurfer.destroy(); wavesurfer = null; }
@@ -360,7 +368,7 @@ const WaveformViewer = (() => {
     init, loadAudio, setOnsetMarker, setOffsetMarker, setReferenceMarker, clearMarkers,
     enableClickToSet, play, stop, playFromOnset, setPlaybackRate,
     isPlaying, getCurrentOnsetMs, getCurrentOffsetMs, getAutoDetectedOffsetMs,
-    onOnsetChanged, updateOnsetDisplay, updateOffsetDisplay, updateDurationDisplay,
+    onOnsetChanged, onOffsetChanged, updateOnsetDisplay, updateOffsetDisplay, updateDurationDisplay,
     zoomIn, zoomOut, zoomReset, destroy
   };
 })();

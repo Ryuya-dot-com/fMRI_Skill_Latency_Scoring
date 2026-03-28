@@ -7,6 +7,7 @@ const ScoringUI = (() => {
 
   const ONSET_STATUS_LABELS = {
     confirmed: 'confirmed', corrected: 'corrected', manual: 'manual',
+    offset_manual: 'offset click',
     no_speech_true: '無発話', no_speech_technical: '機器不良',
     no_speech_nonlexical: '非語彙音', no_speech: 'No Speech'
   };
@@ -77,6 +78,12 @@ const ScoringUI = (() => {
           saveCurrentScore();
           if (_onScoreChanged) _onScoreChanged();
         }
+      });
+    }
+    const clickBtn = document.getElementById('offset-click-set');
+    if (clickBtn) {
+      clickBtn.addEventListener('click', () => {
+        handleOnsetAction('offset_manual');
       });
     }
   }
@@ -194,7 +201,9 @@ const ScoringUI = (() => {
     highlightOnsetButton(status);
 
     if (status === 'manual') {
-      WaveformViewer.enableClickToSet(true);
+      WaveformViewer.enableClickToSet('onset');
+    } else if (status === 'offset_manual') {
+      WaveformViewer.enableClickToSet('offset');
     } else {
       WaveformViewer.enableClickToSet(false);
     }

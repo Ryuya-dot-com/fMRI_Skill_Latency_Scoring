@@ -178,6 +178,9 @@ const App = (() => {
     WaveformViewer.onOnsetChanged((ms, source) => {
       ScoringUI.handleOnsetAction(source);
     });
+    WaveformViewer.onOffsetChanged(() => {
+      ScoringUI.saveCurrentScore();
+    });
 
     if (!_scoringListenersAttached) {
       _scoringListenersAttached = true;
@@ -412,6 +415,10 @@ const App = (() => {
         case 'g':
         case 'G':
           ScoringUI.handleOnsetAction('no_speech_nonlexical');
+          break;
+        case 'o':
+        case 'O':
+          ScoringUI.handleOnsetAction('offset_manual');
           break;
         case 'r':
         case 'R':
