@@ -233,6 +233,9 @@ const WaveformViewer = (() => {
   }
 
   // ── Offset Detection & Marker ──
+  // Auto-detected offset is an INITIAL ESTIMATE only (end-of-signal RMS scan).
+  // The ground truth for fMRI analysis is the rater-confirmed offset_ms_rater
+  // stored in the exported CSV/Excel, after manual verification and correction.
 
   function detectOffset() {
     if (!wavesurfer) return null;
