@@ -385,6 +385,7 @@ body {
 .latency-controls { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .btn-onset { font-size: 13px; padding: 6px 12px; }
 .btn-onset.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-offset.active { background: #008fa8; border-color: #008fa8; color: #fff; }
 .btn-marker-click.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .onset-separator { display: inline-block; width: 1px; height: 24px; background: var(--border); margin: 0 4px; align-self: center; }
 .btn-onset-nospeech { border-color: #666; color: var(--text-muted); font-size: 12px; }

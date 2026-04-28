@@ -12,8 +12,19 @@ const ScoringUI = (() => {
     no_speech_nonlexical: '非語彙音', no_speech: 'No Speech'
   };
 
+  const OFFSET_STATUS_LABELS = {
+    auto: 'auto',
+    confirmed: 'confirmed',
+    corrected: 'corrected',
+    manual: 'manual'
+  };
+
   function isNoSpeechStatus(status) {
     return NO_SPEECH_STATUSES.includes(status);
+  }
+
+  function isNoResponseScore(score) {
+    return !!score && (score.accuracy === 'NR' || isNoSpeechStatus(score.onsetStatus));
   }
 
   let _currentTrial = null;
@@ -78,15 +89,18 @@ const ScoringUI = (() => {
         const ms = parseFloat(input.value);
         if (!isNaN(ms) && ms >= 0) {
           WaveformViewer.setOffsetMarker(ms);
-          saveCurrentScore();
-          if (_onScoreChanged) _onScoreChanged();
+          setOffsetStatus('manual');
         }
       });
+    }
+    const confirmBtn = document.getElementById('offset-confirm');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => confirmOffset());
     }
     const clickBtn = document.getElementById('offset-click-set');
     if (clickBtn) {
       clickBtn.addEventListener('click', () => {
-        setMarkerClickMode('offset', clickBtn.id);
+        startOffsetClickSet();
       });
     }
   }
@@ -282,6 +296,51 @@ const ScoringUI = (() => {
     document.querySelectorAll('.btn-marker-click').forEach(btn => btn.classList.remove('active'));
   }
 
+  function setOffsetStatus(status, options = {}) {
+    const { save = true } = options;
+    const el = document.getElementById('offset-status-display');
+    if (el) {
+      el.dataset.status = status || '';
+      el.textContent = status ? (OFFSET_STATUS_LABELS[status] || status) : '--';
+      el.style.color = status === 'confirmed' ? 'var(--success)' :
+        (status ? 'var(--warning)' : 'var(--text-muted)');
+    }
+
+    const confirmBtn = document.getElementById('offset-confirm');
+    if (confirmBtn) confirmBtn.classList.toggle('active', status === 'confirmed');
+
+    if (save) {
+      saveCurrentScore();
+      if (_onScoreChanged) _onScoreChanged();
+    }
+  }
+
+  function getOffsetStatus() {
+    const el = document.getElementById('offset-status-display');
+    return el && el.dataset.status ? el.dataset.status : null;
+  }
+
+  function handleOffsetChange(source) {
+    setOffsetStatus(source || 'manual');
+  }
+
+  function startOffsetClickSet() {
+    setMarkerClickMode('offset', 'offset-click-set');
+  }
+
+  function confirmOffset() {
+    if (WaveformViewer.getCurrentOffsetMs() == null) {
+      const input = document.getElementById('offset-ms-input');
+      const ms = input ? parseFloat(input.value) : NaN;
+      if (!isNaN(ms) && ms >= 0) {
+        WaveformViewer.setOffsetMarker(ms);
+      }
+    }
+    if (WaveformViewer.getCurrentOffsetMs() != null) {
+      setOffsetStatus('confirmed');
+    }
+  }
+
   function setOnsetStatus(status) {
     highlightOnsetButton(status);
     saveCurrentScore();
@@ -343,18 +402,20 @@ const ScoringUI = (() => {
     // Load existing score
     const existingScore = State.getScore(participant.id, trial.trial);
     if (existingScore) {
+      const noResponseScore = isNoResponseScore(existingScore);
       highlightScoreButton(existingScore.accuracy);
       highlightOnsetButton(existingScore.onsetStatus);
       document.getElementById('trial-notes').value = existingScore.notes || '';
       document.getElementById('onset-ms-input').value =
-        existingScore.onsetMs != null ? existingScore.onsetMs.toFixed(1) : '';
-      const utteranceCount = existingScore.utteranceCount || (existingScore.doubleAnswerCode ? 2 : 1);
+        !noResponseScore && existingScore.onsetMs != null ? existingScore.onsetMs.toFixed(1) : '';
+      const utteranceCount = noResponseScore ? 1 : (existingScore.utteranceCount || (existingScore.doubleAnswerCode ? 2 : 1));
       const utteranceCountEl = document.getElementById('utterance-count');
       if (utteranceCountEl) utteranceCountEl.value = String(utteranceCount);
       renderUtteranceControls(utteranceCount, getScoreUtteranceMarkers(existingScore));
       const offsetInput = document.getElementById('offset-ms-input');
       if (offsetInput) offsetInput.value =
-        existingScore.offsetMs != null ? existingScore.offsetMs.toFixed(1) : '';
+        !noResponseScore && existingScore.offsetMs != null ? existingScore.offsetMs.toFixed(1) : '';
+      setOffsetStatus(noResponseScore ? null : (existingScore.offsetStatus || null), { save: false });
       const doubleAnswer = document.getElementById('double-answer-code');
       if (doubleAnswer) doubleAnswer.value = existingScore.doubleAnswerCode || '';
       const productionType = document.getElementById('production-type');
@@ -377,6 +438,7 @@ const ScoringUI = (() => {
       renderUtteranceControls(1, []);
       const offsetInput = document.getElementById('offset-ms-input');
       if (offsetInput) offsetInput.value = '';
+      setOffsetStatus(null, { save: false });
       const doubleAnswer = document.getElementById('double-answer-code');
       if (doubleAnswer) doubleAnswer.value = '';
       const productionType = document.getElementById('production-type');
@@ -403,13 +465,16 @@ const ScoringUI = (() => {
   }
 
   function handleOnsetAction(status) {
+    if (status === 'offset_manual') {
+      startOffsetClickSet();
+      return;
+    }
+
     highlightOnsetButton(status);
 
     if (status === 'manual') {
       clearMarkerClickButtons();
       WaveformViewer.enableClickToSet('onset');
-    } else if (status === 'offset_manual') {
-      setMarkerClickMode('offset', 'offset-click-set');
     } else {
       WaveformViewer.enableClickToSet(false);
       clearMarkerClickButtons();
@@ -420,6 +485,10 @@ const ScoringUI = (() => {
       WaveformViewer.setOnsetMarker(null);
       WaveformViewer.setOffsetMarker(null);
       WaveformViewer.clearUtteranceMarkers();
+      const utteranceCountEl = document.getElementById('utterance-count');
+      if (utteranceCountEl) utteranceCountEl.value = '1';
+      renderUtteranceControls(1, []);
+      setOffsetStatus(null, { save: false });
     }
 
     // Update status display
@@ -484,18 +553,24 @@ const ScoringUI = (() => {
     let utteranceMarkersMs = utteranceCount > 1
       ? WaveformViewer.getCurrentUtteranceMarkersMs().slice(0, utteranceCount)
       : [];
-    let firstSpeechMs = utteranceMarkersMs[0] != null ? utteranceMarkersMs[0] : null;
+    let firstSpeechMs = utteranceCount > 1
+      ? (utteranceMarkersMs[0] != null ? utteranceMarkersMs[0] : null)
+      : (onsetMs != null ? onsetMs : null);
+    let offsetMs = WaveformViewer.getCurrentOffsetMs();
+    let offsetStatus = getOffsetStatus();
 
-    if (isNoSpeechStatus(onsetStatus)) {
+    if (accuracy === 'NR' || isNoSpeechStatus(onsetStatus)) {
       onsetMs = null;
       firstSpeechMs = null;
       utteranceMarkersMs = [];
+      offsetMs = null;
+      offsetStatus = null;
     }
 
-    const offsetMs = WaveformViewer.getCurrentOffsetMs();
     const hasData = accuracy != null || onsetStatus != null || notes.trim() ||
       doubleAnswerCode || productionType !== 'single' || timingQuality !== 'clear' ||
-      utteranceCount !== 1 || onsetMs != null || firstSpeechMs != null || offsetMs != null;
+      utteranceCount !== 1 || onsetMs != null || firstSpeechMs != null ||
+      offsetMs != null || offsetStatus != null;
     if (!hasData) return;
 
     State.setScore(_currentParticipant.id, _currentTrial.trial, {
@@ -505,6 +580,7 @@ const ScoringUI = (() => {
       utteranceCount,
       utteranceMarkersMs,
       offsetMs,
+      offsetStatus,
       onsetStatus,
       productionType,
       timingQuality,
@@ -526,6 +602,7 @@ const ScoringUI = (() => {
       onsetStatus: getActiveOnsetStatus(),
       onsetMs: WaveformViewer.getCurrentOnsetMs(),
       offsetMs: WaveformViewer.getCurrentOffsetMs(),
+      offsetStatus: getOffsetStatus(),
       utteranceCount: getUtteranceCount(),
       utteranceMarkersMs: WaveformViewer.getCurrentUtteranceMarkersMs(),
       productionType: document.getElementById('production-type')?.value || 'single',
@@ -544,6 +621,9 @@ const ScoringUI = (() => {
       if (score.offsetMs == null) issues.push('Offset');
       if (score.onsetMs != null && score.offsetMs != null && score.offsetMs < score.onsetMs) {
         issues.push('Offset < Onset');
+      }
+      if (score.offsetMs != null && (!score.offsetStatus || score.offsetStatus === 'auto')) {
+        issues.push('Offset confirm');
       }
       if (score.utteranceCount > 1) {
         const missing = score.utteranceMarkersMs
@@ -569,6 +649,8 @@ const ScoringUI = (() => {
   return {
     init, renderTrial, setAccuracyScore, handleOnsetAction,
     saveCurrentScore, scoreByKey, confirmOnset, getActiveScore, getActiveOnsetStatus,
+    handleOffsetChange, confirmOffset, setOffsetStatus, startOffsetClickSet,
+    isNoSpeechStatus, isNoResponseScore,
     getCompletionIssues
   };
 })();

@@ -129,6 +129,7 @@
           <span>Auto-detected onset: <strong id="auto-onset-value">--</strong> ms</span>
           <span>Auto-detected offset: <strong id="auto-offset-value">--</strong> ms</span>
           <span>Status: <strong id="latency-status-display">--</strong></span>
+          <span>Offset status: <strong id="offset-status-display">--</strong></span>
         </div>
         <div class="marker-legend" aria-label="Marker legend">
           <span><i class="legend-line legend-first"></i>Utterance starts</span>
@@ -161,6 +162,7 @@
           <label for="offset-ms-input">Offset (ms):</label>
           <input type="number" id="offset-ms-input" step="0.1" min="0">
           <button id="offset-ms-apply" class="btn btn-sm">Apply</button>
+          <button id="offset-confirm" class="btn btn-sm btn-offset" title="Confirm offset (V)">Confirm Offset</button>
           <button id="offset-click-set" class="btn btn-sm btn-marker-click" title="波形クリックで offset を設定 (O)">Offset Click</button>
         </div>
       </div>
@@ -242,7 +244,7 @@
           <li>Space キーで音声を再生・停止する。</li>
           <li>Accuracy の NR / 0 / 1 で採点する。</li>
           <li>発話の開始点を赤い Onset 線でセットする。</li>
-          <li>発話の終了点を青い Offset 線でセットする。</li>
+          <li>発話の終了点を青い Offset 線でセットし、Confirm Offset で確認する。</li>
           <li>特記事項があれば Notes に記載する。</li>
           <li>右矢印または Enter で次の試行に進む。前の試行は左矢印。</li>
           <li>全試行が終わったら画面下の Export All (CSV) をクリックする。</li>
@@ -264,6 +266,7 @@
           <li><strong>Manual Set:</strong> 波形をクリックしてオンセットを手動設定</li>
           <li><strong>U1/U2 Click:</strong> 波形をクリックして各発話の開始位置を設定</li>
           <li><strong>Offset Click (O):</strong> 波形をクリックして発話終了位置を設定</li>
+          <li><strong>Confirm Offset (V):</strong> Offset が正しいことを確認</li>
           <li><strong>無発話 (T):</strong> 録音中に一切の発話がない場合</li>
           <li><strong>機器不良 (F):</strong> 機材トラブルにより録音不良の場合</li>
           <li><strong>非語彙音 (G):</strong> 咳・息・舌打ちなど非語彙音のみの場合</li>
@@ -334,6 +337,7 @@
           <tr><td>←</td><td>前の試行</td></tr>
           <tr><td>C</td><td>オンセット確認</td></tr>
           <tr><td>O</td><td>波形クリックで Offset を設定</td></tr>
+          <tr><td>V</td><td>Offset を確認</td></tr>
           <tr><td>T</td><td>無発話</td></tr>
           <tr><td>F</td><td>機器不良</td></tr>
           <tr><td>G</td><td>非語彙音</td></tr>
@@ -359,6 +363,7 @@
       <tr><td>&larr;</td><td>Previous trial</td></tr>
       <tr><td>C</td><td>Confirm onset</td></tr>
       <tr><td>O</td><td>Click to set offset</td></tr>
+      <tr><td>V</td><td>Confirm offset</td></tr>
       <tr><td>T</td><td>No speech (true)</td></tr>
       <tr><td>F</td><td>Tech failure</td></tr>
       <tr><td>G</td><td>Non-lexical only</td></tr>

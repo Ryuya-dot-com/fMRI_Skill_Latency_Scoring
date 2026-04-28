@@ -178,9 +178,8 @@ const App = (() => {
     WaveformViewer.onOnsetChanged((ms, source) => {
       ScoringUI.handleOnsetAction(source);
     });
-    WaveformViewer.onOffsetChanged(() => {
-      ScoringUI.saveCurrentScore();
-      showSaveStatus();
+    WaveformViewer.onOffsetChanged((ms, source) => {
+      ScoringUI.handleOffsetChange(source);
     });
     WaveformViewer.onFirstSpeechChanged(() => {
       ScoringUI.saveCurrentScore();
@@ -308,7 +307,10 @@ const App = (() => {
 
       // Set onset marker from saved score, auto-detection, or default (0ms)
       const existingScore = State.getScore(participant.id, trial.trial);
-      if (existingScore && existingScore.onsetMs != null) {
+      const existingNoResponse = ScoringUI.isNoResponseScore(existingScore);
+      if (existingNoResponse) {
+        WaveformViewer.setOnsetMarker(null);
+      } else if (existingScore && existingScore.onsetMs != null) {
         WaveformViewer.setOnsetMarker(existingScore.onsetMs);
       } else if (trial.onset_ms_from_recording_start != null) {
         WaveformViewer.setOnsetMarker(trial.onset_ms_from_recording_start);
@@ -322,7 +324,7 @@ const App = (() => {
       const utteranceMarkers = existingScore && Array.isArray(existingScore.utteranceMarkersMs)
         ? existingScore.utteranceMarkersMs
         : (existingScore && existingScore.firstSpeechMs != null ? [existingScore.firstSpeechMs] : []);
-      if (utteranceCount > 1) {
+      if (!existingNoResponse && utteranceCount > 1) {
         WaveformViewer.setUtteranceMarkers(utteranceMarkers.slice(0, utteranceCount));
       } else {
         WaveformViewer.clearUtteranceMarkers();
@@ -335,12 +337,18 @@ const App = (() => {
         autoOffsetEl.textContent = autoOffset != null ? autoOffset.toFixed(1) : 'N/A';
       }
 
-      if (existingScore && existingScore.offsetMs != null) {
+      if (existingNoResponse) {
+        WaveformViewer.setOffsetMarker(null);
+        ScoringUI.setOffsetStatus(null, { save: false });
+      } else if (existingScore && existingScore.offsetMs != null) {
         WaveformViewer.setOffsetMarker(existingScore.offsetMs);
+        ScoringUI.setOffsetStatus(existingScore.offsetStatus || null, { save: false });
       } else if (autoOffset != null) {
         WaveformViewer.setOffsetMarker(autoOffset);
+        ScoringUI.setOffsetStatus('auto', { save: false });
       } else {
         WaveformViewer.updateOffsetDisplay(null);
+        ScoringUI.setOffsetStatus(null, { save: false });
       }
     } catch (e) {
       if (generation === _loadGeneration) {
@@ -438,7 +446,11 @@ const App = (() => {
           break;
         case 'o':
         case 'O':
-          ScoringUI.handleOnsetAction('offset_manual');
+          ScoringUI.startOffsetClickSet();
+          break;
+        case 'v':
+        case 'V':
+          ScoringUI.confirmOffset();
           break;
         case 'r':
         case 'R':

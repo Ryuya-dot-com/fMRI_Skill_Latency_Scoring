@@ -95,7 +95,7 @@ const WaveformViewer = (() => {
         if (_onOnsetChanged) _onOnsetChanged(clickMs, 'manual');
       } else if (_clickToSetMode === 'offset') {
         setOffsetMarker(clickMs);
-        if (_onOffsetChanged) _onOffsetChanged(clickMs);
+        if (_onOffsetChanged) _onOffsetChanged(clickMs, 'manual');
       } else if (_clickToSetMode && _clickToSetMode.startsWith('utterance:')) {
         const index = parseInt(_clickToSetMode.split(':')[1], 10);
         setUtteranceMarker(index, clickMs);
@@ -399,6 +399,7 @@ const WaveformViewer = (() => {
       _currentOffsetMs = newMs;
       updateOffsetDisplay(newMs);
       updateDurationDisplay();
+      if (_onOffsetChanged) _onOffsetChanged(newMs, 'corrected');
     });
 
     updateOffsetDisplay(ms);

@@ -5,6 +5,33 @@
 const Export = (() => {
 
   const _exportedPopups = new Set();
+  const NO_SPEECH_STATUSES = ['no_speech_true', 'no_speech_technical', 'no_speech_nonlexical', 'no_speech'];
+
+  function isNoSpeechStatus(status) {
+    return NO_SPEECH_STATUSES.includes(status);
+  }
+
+  function isNoResponseScore(score) {
+    return score.accuracy === 'NR' || isNoSpeechStatus(score.onsetStatus);
+  }
+
+  function getFirstSpeechMs(score, isNR) {
+    if (isNR) return null;
+    if (score.firstSpeechMs != null) return score.firstSpeechMs;
+    if (Array.isArray(score.utteranceMarkersMs) && score.utteranceMarkersMs[0] != null) {
+      return score.utteranceMarkersMs[0];
+    }
+    return score.onsetMs != null ? score.onsetMs : null;
+  }
+
+  function getUtteranceMarkers(score, isNR) {
+    if (isNR) return [];
+    if (Array.isArray(score.utteranceMarkersMs) && score.utteranceMarkersMs.length) {
+      return score.utteranceMarkersMs;
+    }
+    const firstSpeechMs = getFirstSpeechMs(score, isNR);
+    return firstSpeechMs != null ? [firstSpeechMs] : [];
+  }
 
   function roundMs(ms) {
     return Math.round(ms * 1000) / 1000;
@@ -77,11 +104,10 @@ const Export = (() => {
     return participant.trials.map(trial => {
       const scoreKey = `${participant.id}_${trial.trial}`;
       const score = state.scores[scoreKey] || {};
-      const isNR = score.accuracy === 'NR';
+      const isNR = isNoResponseScore(score);
       const timingFields = buildTimingFields(score, trial, isNR);
-      const utteranceMarkers = Array.isArray(score.utteranceMarkersMs)
-        ? score.utteranceMarkersMs
-        : (score.firstSpeechMs != null ? [score.firstSpeechMs] : []);
+      const firstSpeechMs = getFirstSpeechMs(score, isNR);
+      const utteranceMarkers = getUtteranceMarkers(score, isNR);
       const roundedUtteranceMarkers = utteranceMarkers
         .map(ms => ms != null ? Math.round(ms * 1000) / 1000 : '')
         .filter(ms => ms !== '');
@@ -113,9 +139,10 @@ const Export = (() => {
         utterance_count: score.utteranceCount != null ? score.utteranceCount : '',
         utterance_onsets_ms: (!isNR && roundedUtteranceMarkers.length) ? roundedUtteranceMarkers.join(';') : '',
         onset_ms_rater: (!isNR && score.onsetMs != null) ? Math.round(score.onsetMs * 1000) / 1000 : '',
-        first_speech_ms_rater: (!isNR && score.firstSpeechMs != null) ? Math.round(score.firstSpeechMs * 1000) / 1000 : '',
+        first_speech_ms_rater: firstSpeechMs != null ? Math.round(firstSpeechMs * 1000) / 1000 : '',
         onset_status: score.onsetStatus || '',
         offset_ms_rater: (!isNR && score.offsetMs != null) ? Math.round(score.offsetMs * 1000) / 1000 : '',
+        offset_status: (!isNR && score.offsetStatus) ? score.offsetStatus : '',
         ...timingFields,
         double_answer_code: score.doubleAnswerCode || '',
         audio_file: trial.audioFile || '',
@@ -185,7 +212,7 @@ const Export = (() => {
       'accuracy_score', 'production_type', 'timing_quality',
       'utterance_count', 'utterance_onsets_ms',
       'onset_ms_rater', 'first_speech_ms_rater', 'onset_status',
-      'offset_ms_rater',
+      'offset_ms_rater', 'offset_status',
       'pre_speech_onset_s', 'pre_speech_duration_s',
       'speech_onset_s_rater', 'speech_duration_s_rater',
       'post_speech_onset_s', 'post_speech_duration_s',
@@ -227,7 +254,7 @@ const Export = (() => {
     for (const trial of participant.trials) {
       const scoreKey = `${participant.id}_${trial.trial}`;
       const score = state.scores[scoreKey] || {};
-      const isNR = score.accuracy === 'NR';
+      const isNR = isNoResponseScore(score);
       const timing = buildTimingFields(score, trial, isNR);
       const productionType = inferProductionType(score);
       const timingQuality = score.timingQuality || 'clear';
@@ -243,6 +270,7 @@ const Export = (() => {
         production_type: productionType,
         timing_quality: timingQuality,
         double_answer_code: score.doubleAnswerCode || '',
+        offset_status: (!isNR && score.offsetStatus) ? score.offsetStatus : '',
         timing_valid: timing.timing_valid,
         timing_issue: timing.timing_issue,
         audio_file: trial.audioFile || '',
@@ -260,9 +288,7 @@ const Export = (() => {
         });
       };
 
-      const utteranceMarkers = Array.isArray(score.utteranceMarkersMs)
-        ? score.utteranceMarkersMs
-        : (score.firstSpeechMs != null ? [score.firstSpeechMs] : []);
+      const utteranceMarkers = getUtteranceMarkers(score, isNR);
       if (!isNR) {
         utteranceMarkers.forEach((ms, index) => {
           if (ms != null && !isNaN(ms)) {
@@ -293,7 +319,7 @@ const Export = (() => {
     const headers = [
       'rater_id', 'participant_id', 'trial', 'session', 'session_trial',
       'picture_label', 'sprang_form', 'accuracy_score', 'production_type',
-      'timing_quality', 'double_answer_code', 'event_type', 'event_index',
+      'timing_quality', 'double_answer_code', 'offset_status', 'event_type', 'event_index',
       'onset_s', 'duration_s', 'source', 'timing_valid', 'timing_issue',
       'audio_file', 'notes'
     ];
