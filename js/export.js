@@ -6,6 +6,21 @@ const Export = (() => {
 
   const _exportedPopups = new Set();
   const NO_SPEECH_STATUSES = ['no_speech_true', 'no_speech_technical', 'no_speech_nonlexical', 'no_speech'];
+  const MIN_REVIEW_SPEECH_DURATION_MS = 250;
+  const MAX_REVIEW_SPEECH_DURATION_MS = 3000;
+  const MARKER_TOLERANCE_MS = 1;
+  const ERROR_QA_FLAGS = new Set([
+    'unscored',
+    'missing_accuracy',
+    'missing_onset',
+    'missing_offset',
+    'offset_before_onset',
+    'offset_after_recording',
+    'utterance_marker_missing',
+    'utterance_marker_out_of_range',
+    'utterance_marker_order',
+    'double_answer_code_missing'
+  ]);
 
   function isNoSpeechStatus(status) {
     return NO_SPEECH_STATUSES.includes(status);
@@ -31,6 +46,115 @@ const Export = (() => {
     }
     const firstSpeechMs = getFirstSpeechMs(score, isNR);
     return firstSpeechMs != null ? [firstSpeechMs] : [];
+  }
+
+  function hasScoreData(score) {
+    return !!score && (
+      score.accuracy != null ||
+      score.onsetStatus != null ||
+      score.onsetMs != null ||
+      score.offsetMs != null ||
+      score.firstSpeechMs != null ||
+      score.offsetStatus != null ||
+      score.doubleAnswerCode ||
+      score.productionType ||
+      score.timingQuality ||
+      (Array.isArray(score.utteranceMarkersMs) && score.utteranceMarkersMs.length > 0) ||
+      (score.notes && score.notes.trim())
+    );
+  }
+
+  function buildQaSummary(score, trial, isNR, timingFields) {
+    const flags = [];
+    const productionType = inferProductionType(score);
+    const timingQuality = score.timingQuality || 'clear';
+    const utteranceCount = score.utteranceCount || (score.doubleAnswerCode ? 2 : 1);
+    const utteranceMarkers = Array.isArray(score.utteranceMarkersMs) ? score.utteranceMarkersMs : [];
+    const recordingEndMs = trial.recordingDurationS != null ? trial.recordingDurationS * 1000 : null;
+
+    if (!hasScoreData(score)) {
+      flags.push('unscored');
+    }
+
+    if (score.accuracy == null && !isNoSpeechStatus(score.onsetStatus)) {
+      flags.push('missing_accuracy');
+    }
+
+    if (score.accuracy === 'NR' && !isNoSpeechStatus(score.onsetStatus)) {
+      flags.push('no_response_reason_missing');
+    }
+
+    if (isNoSpeechStatus(score.onsetStatus) && score.accuracy != null && score.accuracy !== 'NR') {
+      flags.push('accuracy_not_nr_for_no_response');
+    }
+
+    if (!isNR) {
+      if (score.onsetMs == null) flags.push('missing_onset');
+      if (score.offsetMs == null) flags.push('missing_offset');
+      if (timingFields.timing_issue) flags.push(timingFields.timing_issue);
+
+      if (score.offsetMs != null && (!score.offsetStatus || score.offsetStatus === 'auto')) {
+        flags.push('offset_unconfirmed');
+      }
+
+      if (score.onsetMs != null && trial.stimDurationS != null && score.onsetMs > trial.stimDurationS * 1000) {
+        flags.push('onset_after_stimulus_window');
+      }
+
+      if (timingFields.timing_valid === 1 && timingFields.speech_duration_ms_rater !== '') {
+        const durationMs = Number(timingFields.speech_duration_ms_rater);
+        if (durationMs < MIN_REVIEW_SPEECH_DURATION_MS) {
+          flags.push('speech_duration_short');
+        }
+        if (durationMs > MAX_REVIEW_SPEECH_DURATION_MS) {
+          flags.push('speech_duration_long');
+        }
+      }
+
+      if (utteranceCount > 1) {
+        const markers = utteranceMarkers.slice(0, utteranceCount);
+        if (markers.length < utteranceCount || markers.some(ms => ms == null || isNaN(ms))) {
+          flags.push('utterance_marker_missing');
+        }
+        const numericMarkers = markers.filter(ms => ms != null && !isNaN(ms));
+        if (recordingEndMs != null && numericMarkers.some(ms => ms < 0 || ms > recordingEndMs)) {
+          flags.push('utterance_marker_out_of_range');
+        }
+        for (let i = 1; i < numericMarkers.length; i++) {
+          if (numericMarkers[i] + MARKER_TOLERANCE_MS < numericMarkers[i - 1]) {
+            flags.push('utterance_marker_order');
+            break;
+          }
+        }
+        if (score.onsetMs != null && numericMarkers[0] != null && numericMarkers[0] > score.onsetMs + MARKER_TOLERANCE_MS) {
+          flags.push('first_speech_after_analysis_onset');
+        }
+        if (productionType === 'single') {
+          flags.push('multi_utterance_single_type');
+        }
+      }
+
+      if (productionType === 'double_answer' && !score.doubleAnswerCode) {
+        flags.push('double_answer_code_missing');
+      }
+      if (score.doubleAnswerCode && productionType !== 'double_answer') {
+        flags.push('double_answer_code_type_mismatch');
+      }
+    }
+
+    if (timingQuality !== 'clear') {
+      flags.push(`timing_quality_${timingQuality}`);
+    }
+
+    const uniqueFlags = Array.from(new Set(flags));
+    const qaSeverity = uniqueFlags.some(flag => ERROR_QA_FLAGS.has(flag)) ? 'error' :
+      (uniqueFlags.length ? 'review' : 'ok');
+
+    return {
+      qa_severity: qaSeverity,
+      qa_flag_count: uniqueFlags.length,
+      qa_flags: uniqueFlags.join(';')
+    };
   }
 
   function roundMs(ms) {
@@ -106,6 +230,7 @@ const Export = (() => {
       const score = state.scores[scoreKey] || {};
       const isNR = isNoResponseScore(score);
       const timingFields = buildTimingFields(score, trial, isNR);
+      const qaSummary = buildQaSummary(score, trial, isNR, timingFields);
       const firstSpeechMs = getFirstSpeechMs(score, isNR);
       const utteranceMarkers = getUtteranceMarkers(score, isNR);
       const roundedUtteranceMarkers = utteranceMarkers
@@ -144,6 +269,7 @@ const Export = (() => {
         offset_ms_rater: (!isNR && score.offsetMs != null) ? Math.round(score.offsetMs * 1000) / 1000 : '',
         offset_status: (!isNR && score.offsetStatus) ? score.offsetStatus : '',
         ...timingFields,
+        ...qaSummary,
         double_answer_code: score.doubleAnswerCode || '',
         audio_file: trial.audioFile || '',
         recording_duration_s: trial.recordingDurationS != null ? trial.recordingDurationS : '',
@@ -217,6 +343,7 @@ const Export = (() => {
       'speech_onset_s_rater', 'speech_duration_s_rater',
       'post_speech_onset_s', 'post_speech_duration_s',
       'speech_duration_ms_rater', 'timing_valid', 'timing_issue',
+      'qa_severity', 'qa_flag_count', 'qa_flags',
       'double_answer_code',
       'audio_file', 'recording_duration_s', 'duration_for_fmri_s', 'log_file',
       'jitter_ms', 'notes', 'scored_at'
@@ -256,6 +383,7 @@ const Export = (() => {
       const score = state.scores[scoreKey] || {};
       const isNR = isNoResponseScore(score);
       const timing = buildTimingFields(score, trial, isNR);
+      const qaSummary = buildQaSummary(score, trial, isNR, timing);
       const productionType = inferProductionType(score);
       const timingQuality = score.timingQuality || 'clear';
       const base = {
@@ -273,6 +401,8 @@ const Export = (() => {
         offset_status: (!isNR && score.offsetStatus) ? score.offsetStatus : '',
         timing_valid: timing.timing_valid,
         timing_issue: timing.timing_issue,
+        qa_severity: qaSummary.qa_severity,
+        qa_flags: qaSummary.qa_flags,
         audio_file: trial.audioFile || '',
         notes: score.notes || ''
       };
@@ -321,7 +451,7 @@ const Export = (() => {
       'picture_label', 'sprang_form', 'accuracy_score', 'production_type',
       'timing_quality', 'double_answer_code', 'offset_status', 'event_type', 'event_index',
       'onset_s', 'duration_s', 'source', 'timing_valid', 'timing_issue',
-      'audio_file', 'notes'
+      'qa_severity', 'qa_flags', 'audio_file', 'notes'
     ];
 
     const csvRows = [headers.join(',')];
@@ -349,11 +479,52 @@ const Export = (() => {
     downloadBlob(csv, `onset_events_${state.raterId}_${ts}.csv`, 'text/csv');
   }
 
+  async function exportQACSV(dataset) {
+    const state = State.get();
+    if (!state) return;
+
+    const headers = [
+      'rater_id', 'participant_id', 'trial', 'session', 'session_trial',
+      'picture_label', 'sprang_form', 'accuracy_score', 'production_type',
+      'timing_quality', 'double_answer_code', 'onset_status', 'offset_status',
+      'utterance_count', 'utterance_onsets_ms',
+      'onset_ms_rater', 'first_speech_ms_rater', 'offset_ms_rater',
+      'speech_duration_ms_rater', 'timing_valid', 'timing_issue',
+      'qa_severity', 'qa_flag_count', 'qa_flags',
+      'audio_file', 'notes', 'scored_at'
+    ];
+
+    const csvRows = [headers.join(',')];
+    for (const pid of state.assignedParticipants) {
+      let participant;
+      try {
+        participant = await CsvLoader.loadParticipant(dataset.id, pid);
+      } catch (e) {
+        console.warn(`Failed to load participant ${pid} for QA export`);
+        continue;
+      }
+
+      const rows = generateParticipantRows(participant, dataset, state)
+        .filter(row => row.qa_flags);
+      for (const row of rows) {
+        csvRows.push(headers.map(h => {
+          const val = row[h];
+          if (val === '' || val == null) return '';
+          return escapeCSV(String(val));
+        }).join(','));
+      }
+    }
+
+    const csv = csvRows.join('\n');
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    downloadBlob(csv, `onset_qa_${state.raterId}_${ts}.csv`, 'text/csv');
+  }
+
   function exportJSON() {
     const state = State.get();
     if (!state) return;
     const json = JSON.stringify({
-      exportVersion: '2.2.0',
+      exportVersion: '2.3.0',
       exportedAt: new Date().toISOString(),
       raterId: state.raterId,
       datasetId: state.datasetId,
@@ -396,6 +567,6 @@ const Export = (() => {
 
   return {
     showParticipantExportPopup, downloadParticipantExcel,
-    exportCurrentParticipant, exportAllCSV, exportEventsCSV, exportJSON
+    exportCurrentParticipant, exportAllCSV, exportEventsCSV, exportQACSV, exportJSON
   };
 })();

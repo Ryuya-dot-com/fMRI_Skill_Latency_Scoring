@@ -18,6 +18,8 @@ const ScoringUI = (() => {
     corrected: 'corrected',
     manual: 'manual'
   };
+  const MIN_REVIEW_SPEECH_DURATION_MS = 250;
+  const MAX_REVIEW_SPEECH_DURATION_MS = 3000;
 
   function isNoSpeechStatus(status) {
     return NO_SPEECH_STATUSES.includes(status);
@@ -606,7 +608,8 @@ const ScoringUI = (() => {
       utteranceCount: getUtteranceCount(),
       utteranceMarkersMs: WaveformViewer.getCurrentUtteranceMarkersMs(),
       productionType: document.getElementById('production-type')?.value || 'single',
-      timingQuality: document.getElementById('timing-quality')?.value || 'clear'
+      timingQuality: document.getElementById('timing-quality')?.value || 'clear',
+      doubleAnswerCode: document.getElementById('double-answer-code')?.value || ''
     };
   }
 
@@ -622,6 +625,12 @@ const ScoringUI = (() => {
       if (score.onsetMs != null && score.offsetMs != null && score.offsetMs < score.onsetMs) {
         issues.push('Offset < Onset');
       }
+      if (score.onsetMs != null && score.offsetMs != null && score.offsetMs >= score.onsetMs) {
+        const durationMs = score.offsetMs - score.onsetMs;
+        if (durationMs < MIN_REVIEW_SPEECH_DURATION_MS || durationMs > MAX_REVIEW_SPEECH_DURATION_MS) {
+          issues.push('Duration review');
+        }
+      }
       if (score.offsetMs != null && (!score.offsetStatus || score.offsetStatus === 'auto')) {
         issues.push('Offset confirm');
       }
@@ -630,6 +639,10 @@ const ScoringUI = (() => {
           .slice(0, score.utteranceCount)
           .some(ms => ms == null || isNaN(ms));
         if (missing) issues.push('U markers');
+        if (score.productionType === 'single') issues.push('Production type');
+      }
+      if (score.productionType === 'double_answer' && !score.doubleAnswerCode) {
+        issues.push('DA code');
       }
     }
 
