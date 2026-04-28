@@ -381,7 +381,7 @@ body {
 }
 .legend-first { background: #ff9f43; }
 .legend-onset { background: #ff3232; }
-.legend-offset { background: #3232ff; }
+.legend-offset { background: #00d6ff; }
 .latency-controls { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .btn-onset { font-size: 13px; padding: 6px 12px; }
 .btn-onset.active { background: var(--accent); border-color: var(--accent); color: #fff; }

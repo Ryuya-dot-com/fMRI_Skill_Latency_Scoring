@@ -31,6 +31,7 @@ const WaveformViewer = (() => {
   const BASE_PX_PER_SEC = 100;
   const MIN_ZOOM = 1;
   const MAX_ZOOM = 20;
+  const MARKER_WIDTH_SEC = 0.035;
 
   const containerEl = '#waveform-container';
 
@@ -212,8 +213,8 @@ const WaveformViewer = (() => {
 
     onsetRegion = regionsPlugin.addRegion({
       start: startSec,
-      end: Math.min(startSec + 0.005, duration),
-      color: 'rgba(255, 50, 50, 0.8)',
+      end: Math.min(startSec + MARKER_WIDTH_SEC, duration),
+      color: 'rgba(255, 35, 35, 0.95)',
       drag: true,
       resize: false
     });
@@ -252,7 +253,7 @@ const WaveformViewer = (() => {
 
     utteranceRegions[index] = regionsPlugin.addRegion({
       start: startSec,
-      end: Math.min(startSec + 0.005, duration),
+      end: Math.min(startSec + MARKER_WIDTH_SEC, duration),
       color: UTTERANCE_COLORS[index % UTTERANCE_COLORS.length],
       drag: true,
       resize: false
@@ -387,8 +388,8 @@ const WaveformViewer = (() => {
 
     offsetRegion = regionsPlugin.addRegion({
       start: startSec,
-      end: Math.min(startSec + 0.005, duration),
-      color: 'rgba(50, 50, 255, 0.8)',
+      end: Math.min(startSec + MARKER_WIDTH_SEC, duration),
+      color: 'rgba(0, 214, 255, 0.95)',
       drag: true,
       resize: false
     });

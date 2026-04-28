@@ -100,9 +100,12 @@ const ScoringUI = (() => {
           const da = document.getElementById('double-answer-code');
           if (da) da.value = '';
         }
-        renderUtteranceControls(count, WaveformViewer.getCurrentUtteranceMarkersMs());
         if (count < 2) {
           WaveformViewer.clearUtteranceMarkers();
+          renderUtteranceControls(count, []);
+        } else {
+          const markers = ensureVisibleUtteranceMarkers(count);
+          renderUtteranceControls(count, markers);
         }
         saveCurrentScore();
         if (_onScoreChanged) _onScoreChanged();
@@ -190,7 +193,8 @@ const ScoringUI = (() => {
     const current = getUtteranceCount();
     if (current >= count) return;
     select.value = String(count);
-    renderUtteranceControls(count, WaveformViewer.getCurrentUtteranceMarkersMs());
+    const markers = ensureVisibleUtteranceMarkers(count);
+    renderUtteranceControls(count, markers);
   }
 
   function setProductionType(value) {
@@ -235,6 +239,27 @@ const ScoringUI = (() => {
         </div>
       `;
     }).join('');
+  }
+
+  function ensureVisibleUtteranceMarkers(count) {
+    const markers = WaveformViewer.getCurrentUtteranceMarkersMs().slice(0, count);
+    const onsetMs = WaveformViewer.getCurrentOnsetMs();
+    const offsetMs = WaveformViewer.getCurrentOffsetMs();
+    const startMs = onsetMs != null && !isNaN(onsetMs) ? onsetMs : 0;
+    const hasSpeechWindow = offsetMs != null && !isNaN(offsetMs) && offsetMs > startMs;
+
+    for (let i = 0; i < count; i++) {
+      if (markers[i] != null && !isNaN(markers[i])) continue;
+      if (hasSpeechWindow) {
+        const fraction = i / count;
+        markers[i] = startMs + (offsetMs - startMs) * fraction;
+      } else {
+        markers[i] = startMs + (i * 500);
+      }
+    }
+
+    WaveformViewer.setUtteranceMarkers(markers);
+    return markers;
   }
 
   function setupNotesField() {
