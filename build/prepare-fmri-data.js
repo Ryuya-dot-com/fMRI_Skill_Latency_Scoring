@@ -36,7 +36,7 @@ const VERBS = {
   comenzas: { japanese: '笑う',     sprang: 'camenziando', pictureType: 2 },
   definis:  { japanese: '泣く',     sprang: 'dofiniondo',  pictureType: 3 },
   deprimir: { japanese: '走る',     sprang: 'deprimiondo', pictureType: 4 },
-  dominas:  { japanese: '食べる',   sprang: 'damitiando',  pictureType: 5 },
+  dominas:  { japanese: '食べる',   sprang: 'daminiando',  pictureType: 5 },
   gustar:   { japanese: '跳ねる',   sprang: 'gustiando',   pictureType: 6 },
   impedir:  { japanese: '歌う',     sprang: 'impediondo',  pictureType: 7 },
   lavar:    { japanese: '寝る',     sprang: 'laviando',    pictureType: 8 },

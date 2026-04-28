@@ -42,7 +42,7 @@ fMRI 命名課題（スプラング語）の音声録音に対して、発話開
 | comenzas | 笑う | camenziando |
 | definis | 泣く | dofiniondo |
 | deprimir | 走る | deprimiondo |
-| dominas | 食べる | damitiando |
+| dominas | 食べる | daminiando |
 | gustar | 跳ねる | gustiando |
 | impedir | 歌う | impediondo |
 | lavar | 寝る | laviando |

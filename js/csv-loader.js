@@ -2,11 +2,17 @@
  * csv-loader.js - Browser-side CSV loading for fMRI naming task
  */
 const CsvLoader = (() => {
+  const DATA_VERSION = '20260428-dominas-v1';
   let _index = null;
   const _cache = new Map();
 
+  function withDataVersion(url) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}v=${DATA_VERSION}`;
+  }
+
   async function loadIndex() {
-    const resp = await fetch('data/participants.json');
+    const resp = await fetch(withDataVersion('data/participants.json'));
     if (!resp.ok) throw new Error('Failed to load participants.json');
     _index = await resp.json();
     return _index;
@@ -35,7 +41,7 @@ const CsvLoader = (() => {
     if (!ds) throw new Error(`Dataset not found: ${datasetId}`);
 
     const csvUrl = `data/${ds.csvPath}/${participantId}/results_${participantId}.csv`;
-    const resp = await fetch(csvUrl);
+    const resp = await fetch(withDataVersion(csvUrl));
     if (!resp.ok) throw new Error(`Failed to load CSV: ${csvUrl}`);
     const text = await resp.text();
 

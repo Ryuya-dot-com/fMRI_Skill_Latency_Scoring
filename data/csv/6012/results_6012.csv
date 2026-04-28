@@ -1,6 +1,6 @@
 trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sprang_form,suffix,suffix_label,rule_type,rule_id,stim_onset_s,stim_duration_s,repetition,total_repetition,item_repetition,rule_repetition,audio_file,recording_duration_s,duration_for_fmri_s,log_file,jitter_ms
 1,1,1,1,trial-001-partir,10,partir,partiondo,ir,-ir,rule_ir,2,10.5484,4.0,1,1,1,1,Sub6012_001_partir.wav,10.2015,10.2015,fmri_naming_task-20251204-154613-DLHRY.log,6201
-2,1,2,2,trial-002-dominas,5,dominas,damitiando,as,-as,rule_as,3,21.2816,4.0,1,1,1,1,Sub6012_002_dominas.wav,10.861,10.861,fmri_naming_task-20251204-154613-DLHRY.log,6861
+2,1,2,2,trial-002-dominas,5,dominas,daminiando,as,-as,rule_as,3,21.2816,4.0,1,1,1,1,Sub6012_002_dominas.wav,10.861,10.861,fmri_naming_task-20251204-154613-DLHRY.log,6861
 3,1,3,3,trial-003-definis,3,definis,dofiniondo,is,-is,rule_is,4,32.6648,4.0,1,1,1,1,Sub6012_003_definis.wav,9.1682,9.1682,fmri_naming_task-20251204-154613-DLHRY.log,5168
 4,1,4,4,trial-004-lavar,8,lavar,laviando,ar,-ar,rule_ar,1,42.3647,4.0,1,1,1,1,Sub6012_004_lavar.wav,8.0241,8.0241,fmri_naming_task-20251204-154613-DLHRY.log,4024
 5,1,5,5,trial-005-avanzar,1,avanzar,avanziando,ar,-ar,rule_ar,1,50.9146,4.0,1,1,1,2,Sub6012_005_avanzar.wav,9.9154,9.9154,fmri_naming_task-20251204-154613-DLHRY.log,5915
@@ -22,11 +22,11 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 21,1,21,21,trial-021-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,206.4131,4.0,2,2,2,6,Sub6012_021_gustar.wav,8.7091,8.7091,fmri_naming_task-20251204-154613-DLHRY.log,4709
 22,1,22,22,trial-022-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,215.6464,4.0,2,2,2,5,Sub6012_022_deprimir.wav,7.2906,7.2906,fmri_naming_task-20251204-154613-DLHRY.log,3291
 23,1,23,23,trial-023-partir,10,partir,partiondo,ir,-ir,rule_ir,2,223.4629,4.0,2,2,2,6,Sub6012_023_partir.wav,8.8795,8.8795,fmri_naming_task-20251204-154613-DLHRY.log,4879
-24,1,24,24,trial-024-dominas,5,dominas,damitiando,as,-as,rule_as,3,232.8795,4.0,2,2,2,6,Sub6012_024_dominas.wav,7.2918,7.2918,fmri_naming_task-20251204-154613-DLHRY.log,3292
+24,1,24,24,trial-024-dominas,5,dominas,daminiando,as,-as,rule_as,3,232.8795,4.0,2,2,2,6,Sub6012_024_dominas.wav,7.2918,7.2918,fmri_naming_task-20251204-154613-DLHRY.log,3292
 25,1,25,25,trial-025-definis,3,definis,dofiniondo,is,-is,rule_is,4,240.6961,4.0,3,3,3,7,Sub6012_025_definis.wav,8.7876,8.7876,fmri_naming_task-20251204-154613-DLHRY.log,4788
 26,1,26,26,trial-026-lavar,8,lavar,laviando,ar,-ar,rule_ar,1,250.0127,4.0,3,3,3,7,Sub6012_026_lavar.wav,7.9971,7.9971,fmri_naming_task-20251204-154613-DLHRY.log,3997
 27,1,27,27,trial-027-sentis,12,sentis,sontiondo,is,-is,rule_is,4,258.5459,4.0,3,3,3,8,Sub6012_027_sentis.wav,10.2358,10.2358,fmri_naming_task-20251204-154613-DLHRY.log,6236
-28,1,28,28,trial-028-dominas,5,dominas,damitiando,as,-as,rule_as,3,269.3125,4.0,3,3,3,7,Sub6012_028_dominas.wav,10.5755,10.5755,fmri_naming_task-20251204-154613-DLHRY.log,6576
+28,1,28,28,trial-028-dominas,5,dominas,daminiando,as,-as,rule_as,3,269.3125,4.0,3,3,3,7,Sub6012_028_dominas.wav,10.5755,10.5755,fmri_naming_task-20251204-154613-DLHRY.log,6576
 29,1,29,29,trial-029-partir,10,partir,partiondo,ir,-ir,rule_ir,2,280.4124,4.0,3,3,3,7,Sub6012_029_partir.wav,7.9349,7.9349,fmri_naming_task-20251204-154613-DLHRY.log,3935
 30,1,30,30,trial-030-avanzar,1,avanzar,avanziando,ar,-ar,rule_ar,1,288.879,4.0,3,3,3,8,Sub6012_030_avanzar.wav,9.9305,9.9305,fmri_naming_task-20251204-154613-DLHRY.log,5930
 31,1,31,31,trial-031-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,299.3456,4.0,3,3,3,8,Sub6012_031_deprimir.wav,7.2705,7.2705,fmri_naming_task-20251204-154613-DLHRY.log,3270
@@ -45,7 +45,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 44,1,44,44,trial-044-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,419.2944,4.0,4,4,4,12,Sub6012_044_gustar.wav,9.7677,9.7677,fmri_naming_task-20251204-154613-DLHRY.log,5768
 45,1,45,45,trial-045-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,429.5943,4.0,4,4,4,12,Sub6012_045_deprimir.wav,7.688,7.688,fmri_naming_task-20251204-154613-DLHRY.log,3688
 46,1,46,46,trial-046-recibis,11,recibis,rocibiondo,is,-is,rule_is,4,437.8275,4.0,4,4,4,12,Sub6012_046_recibis.wav,8.4879,8.4879,fmri_naming_task-20251204-154613-DLHRY.log,4488
-47,1,47,47,trial-047-dominas,5,dominas,damitiando,as,-as,rule_as,3,446.8441,4.0,4,4,4,11,Sub6012_047_dominas.wav,9.616,9.616,fmri_naming_task-20251204-154613-DLHRY.log,5616
+47,1,47,47,trial-047-dominas,5,dominas,daminiando,as,-as,rule_as,3,446.8441,4.0,4,4,4,11,Sub6012_047_dominas.wav,9.616,9.616,fmri_naming_task-20251204-154613-DLHRY.log,5616
 48,1,48,48,trial-048-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,456.994,4.0,4,4,4,12,Sub6012_048_comenzas.wav,8.4586,8.4586,fmri_naming_task-20251204-154613-DLHRY.log,4459
 49,1,49,49,trial-049-recibis,11,recibis,rocibiondo,is,-is,rule_is,4,465.9773,4.0,5,5,5,13,Sub6012_049_recibis.wav,7.6208,7.6208,fmri_naming_task-20251204-154613-DLHRY.log,3621
 50,1,50,50,trial-050-definis,3,definis,dofiniondo,is,-is,rule_is,4,474.1272,4.0,5,5,5,14,Sub6012_050_definis.wav,10.2262,10.2262,fmri_naming_task-20251204-154613-DLHRY.log,6226
@@ -56,7 +56,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 55,1,55,55,trial-055-montas,9,montas,mantiando,as,-as,rule_as,3,521.8101,4.0,5,5,5,14,Sub6012_055_montas.wav,8.2419,8.2419,fmri_naming_task-20251204-154613-DLHRY.log,4242
 56,1,56,56,trial-056-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,530.5933,4.0,5,5,5,14,Sub6012_056_impedir.wav,9.7826,9.7826,fmri_naming_task-20251204-154613-DLHRY.log,5783
 57,1,57,57,trial-057-partir,10,partir,partiondo,ir,-ir,rule_ir,2,540.9099,4.0,5,5,5,15,Sub6012_057_partir.wav,9.376,9.376,fmri_naming_task-20251204-154613-DLHRY.log,5376
-58,1,58,58,trial-058-dominas,5,dominas,damitiando,as,-as,rule_as,3,550.8098,4.0,5,5,5,15,Sub6012_058_dominas.wav,9.1574,9.1574,fmri_naming_task-20251204-154613-DLHRY.log,5157
+58,1,58,58,trial-058-dominas,5,dominas,daminiando,as,-as,rule_as,3,550.8098,4.0,5,5,5,15,Sub6012_058_dominas.wav,9.1574,9.1574,fmri_naming_task-20251204-154613-DLHRY.log,5157
 59,1,59,59,trial-059-avanzar,1,avanzar,avanziando,ar,-ar,rule_ar,1,560.493,4.0,5,5,5,15,Sub6012_059_avanzar.wav,10.0179,10.0179,fmri_naming_task-20251204-154613-DLHRY.log,6018
 60,1,60,60,trial-060-sentis,12,sentis,sontiondo,is,-is,rule_is,4,571.0596,4.0,5,5,5,15,Sub6012_060_sentis.wav,10.7901,10.7901,fmri_naming_task-20251204-154613-DLHRY.log,6790
 61,2,1,61,trial-061-definis,3,definis,dofiniondo,is,-is,rule_is,4,10.5547,4.0,1,6,6,16,Sub6012_061_definis.wav,8.3978,8.3978,fmri_naming_task-20251204-160035-HYIOT.log,4398
@@ -65,7 +65,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 64,2,4,64,trial-064-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,36.8544,4.0,1,6,6,17,Sub6012_064_gustar.wav,7.6959,7.6959,fmri_naming_task-20251204-160035-HYIOT.log,3696
 65,2,5,65,trial-065-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,45.0877,4.0,1,6,6,16,Sub6012_065_comenzas.wav,10.0677,10.0677,fmri_naming_task-20251204-160035-HYIOT.log,6068
 66,2,6,66,trial-066-partir,10,partir,partiondo,ir,-ir,rule_ir,2,55.6876,4.0,1,6,6,16,Sub6012_066_partir.wav,10.5588,10.5588,fmri_naming_task-20251204-160035-HYIOT.log,6559
-67,2,7,67,trial-067-dominas,5,dominas,damitiando,as,-as,rule_as,3,66.7708,4.0,1,6,6,17,Sub6012_067_dominas.wav,9.9257,9.9257,fmri_naming_task-20251204-160035-HYIOT.log,5926
+67,2,7,67,trial-067-dominas,5,dominas,daminiando,as,-as,rule_as,3,66.7708,4.0,1,6,6,17,Sub6012_067_dominas.wav,9.9257,9.9257,fmri_naming_task-20251204-160035-HYIOT.log,5926
 68,2,8,68,trial-068-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,77.2207,4.0,1,6,6,17,Sub6012_068_impedir.wav,9.5915,9.5915,fmri_naming_task-20251204-160035-HYIOT.log,5591
 69,2,9,69,trial-069-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,87.3373,4.0,1,6,6,18,Sub6012_069_deprimir.wav,8.517,8.517,fmri_naming_task-20251204-160035-HYIOT.log,4517
 70,2,10,70,trial-070-sentis,12,sentis,sontiondo,is,-is,rule_is,4,96.4038,4.0,1,6,6,18,Sub6012_070_sentis.wav,8.603,8.603,fmri_naming_task-20251204-160035-HYIOT.log,4603
@@ -75,7 +75,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 74,2,14,74,trial-074-sentis,12,sentis,sontiondo,is,-is,rule_is,4,134.2035,4.0,2,7,7,19,Sub6012_074_sentis.wav,7.945,7.945,fmri_naming_task-20251204-160035-HYIOT.log,3945
 75,2,15,75,trial-075-montas,9,montas,mantiando,as,-as,rule_as,3,142.6701,4.0,2,7,7,19,Sub6012_075_montas.wav,8.1459,8.1459,fmri_naming_task-20251204-160035-HYIOT.log,4146
 76,2,16,76,trial-076-definis,3,definis,dofiniondo,is,-is,rule_is,4,151.3367,4.0,2,7,7,20,Sub6012_076_definis.wav,10.8041,10.8041,fmri_naming_task-20251204-160035-HYIOT.log,6804
-77,2,17,77,trial-077-dominas,5,dominas,damitiando,as,-as,rule_as,3,162.6699,4.0,2,7,7,20,Sub6012_077_dominas.wav,10.1529,10.1529,fmri_naming_task-20251204-160035-HYIOT.log,6153
+77,2,17,77,trial-077-dominas,5,dominas,daminiando,as,-as,rule_as,3,162.6699,4.0,2,7,7,20,Sub6012_077_dominas.wav,10.1529,10.1529,fmri_naming_task-20251204-160035-HYIOT.log,6153
 78,2,18,78,trial-078-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,173.3531,4.0,2,7,7,19,Sub6012_078_impedir.wav,8.2001,8.2001,fmri_naming_task-20251204-160035-HYIOT.log,4200
 79,2,19,79,trial-079-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,182.0864,4.0,2,7,7,20,Sub6012_079_gustar.wav,9.7038,9.7038,fmri_naming_task-20251204-160035-HYIOT.log,5704
 80,2,20,80,trial-080-recibis,11,recibis,rocibiondo,is,-is,rule_is,4,192.3196,4.0,2,7,7,21,Sub6012_080_recibis.wav,8.6765,8.6765,fmri_naming_task-20251204-160035-HYIOT.log,4676
@@ -88,7 +88,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 87,2,27,87,trial-087-avanzar,1,avanzar,avanziando,ar,-ar,rule_ar,1,257.2357,4.0,3,8,8,23,Sub6012_087_avanzar.wav,10.5558,10.5558,fmri_naming_task-20251204-160035-HYIOT.log,6556
 88,2,28,88,trial-088-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,268.3189,4.0,3,8,8,22,Sub6012_088_deprimir.wav,7.4704,7.4704,fmri_naming_task-20251204-160035-HYIOT.log,3470
 89,2,29,89,trial-089-recibis,11,recibis,rocibiondo,is,-is,rule_is,4,276.3188,4.0,3,8,8,23,Sub6012_089_recibis.wav,11.1747,11.1747,fmri_naming_task-20251204-160035-HYIOT.log,7175
-90,2,30,90,trial-090-dominas,5,dominas,damitiando,as,-as,rule_as,3,288.0187,4.0,3,8,8,22,Sub6012_090_dominas.wav,8.1206,8.1206,fmri_naming_task-20251204-160035-HYIOT.log,4121
+90,2,30,90,trial-090-dominas,5,dominas,daminiando,as,-as,rule_as,3,288.0187,4.0,3,8,8,22,Sub6012_090_dominas.wav,8.1206,8.1206,fmri_naming_task-20251204-160035-HYIOT.log,4121
 91,2,31,91,trial-091-sentis,12,sentis,sontiondo,is,-is,rule_is,4,296.6686,4.0,3,8,8,24,Sub6012_091_sentis.wav,8.3041,8.3041,fmri_naming_task-20251204-160035-HYIOT.log,4304
 92,2,32,92,trial-092-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,305.5019,4.0,3,8,8,23,Sub6012_092_impedir.wav,8.7293,8.7293,fmri_naming_task-20251204-160035-HYIOT.log,4729
 93,2,33,93,trial-093-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,314.7684,4.0,3,8,8,23,Sub6012_093_comenzas.wav,10.3602,10.3602,fmri_naming_task-20251204-160035-HYIOT.log,6360
@@ -104,7 +104,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 103,2,43,103,trial-103-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,406.2842,4.0,4,9,9,25,Sub6012_103_comenzas.wav,7.5875,7.5875,fmri_naming_task-20251204-160035-HYIOT.log,3588
 104,2,44,104,trial-104-partir,10,partir,partiondo,ir,-ir,rule_ir,2,414.4008,4.0,4,9,9,26,Sub6012_104_partir.wav,8.1741,8.1741,fmri_naming_task-20251204-160035-HYIOT.log,4174
 105,2,45,105,trial-105-definis,3,definis,dofiniondo,is,-is,rule_is,4,423.1007,4.0,4,9,9,27,Sub6012_105_definis.wav,8.1464,8.1464,fmri_naming_task-20251204-160035-HYIOT.log,4146
-106,2,46,106,trial-106-dominas,5,dominas,damitiando,as,-as,rule_as,3,431.784,4.0,4,9,9,26,Sub6012_106_dominas.wav,8.3811,8.3811,fmri_naming_task-20251204-160035-HYIOT.log,4381
+106,2,46,106,trial-106-dominas,5,dominas,daminiando,as,-as,rule_as,3,431.784,4.0,4,9,9,26,Sub6012_106_dominas.wav,8.3811,8.3811,fmri_naming_task-20251204-160035-HYIOT.log,4381
 107,2,47,107,trial-107-montas,9,montas,mantiando,as,-as,rule_as,3,440.7006,4.0,4,9,9,27,Sub6012_107_montas.wav,10.6853,10.6853,fmri_naming_task-20251204-160035-HYIOT.log,6685
 108,2,48,108,trial-108-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,451.9171,4.0,4,9,9,27,Sub6012_108_deprimir.wav,8.4048,8.4048,fmri_naming_task-20251204-160035-HYIOT.log,4405
 109,2,49,109,trial-109-partir,10,partir,partiondo,ir,-ir,rule_ir,2,460.8504,4.0,5,10,10,28,Sub6012_109_partir.wav,8.7071,8.7071,fmri_naming_task-20251204-160035-HYIOT.log,4707
@@ -113,7 +113,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 112,2,52,112,trial-112-definis,3,definis,dofiniondo,is,-is,rule_is,4,487.1001,4.0,5,10,10,28,Sub6012_112_definis.wav,8.976,8.976,fmri_naming_task-20251204-160035-HYIOT.log,4976
 113,2,53,113,trial-113-sentis,12,sentis,sontiondo,is,-is,rule_is,4,496.6,4.0,5,10,10,29,Sub6012_113_sentis.wav,10.0501,10.0501,fmri_naming_task-20251204-160035-HYIOT.log,6050
 114,2,54,114,trial-114-recibis,11,recibis,rocibiondo,is,-is,rule_is,4,507.1833,4.0,5,10,10,30,Sub6012_114_recibis.wav,8.1429,8.1429,fmri_naming_task-20251204-160035-HYIOT.log,4143
-115,2,55,115,trial-115-dominas,5,dominas,damitiando,as,-as,rule_as,3,515.8499,4.0,5,10,10,28,Sub6012_115_dominas.wav,8.5459,8.5459,fmri_naming_task-20251204-160035-HYIOT.log,4546
+115,2,55,115,trial-115-dominas,5,dominas,daminiando,as,-as,rule_as,3,515.8499,4.0,5,10,10,28,Sub6012_115_dominas.wav,8.5459,8.5459,fmri_naming_task-20251204-160035-HYIOT.log,4546
 116,2,56,116,trial-116-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,524.9164,4.0,5,10,10,30,Sub6012_116_impedir.wav,8.274,8.274,fmri_naming_task-20251204-160035-HYIOT.log,4274
 117,2,57,117,trial-117-avanzar,1,avanzar,avanziando,ar,-ar,rule_ar,1,533.7164,4.0,5,10,10,29,Sub6012_117_avanzar.wav,7.3495,7.3495,fmri_naming_task-20251204-160035-HYIOT.log,3350
 118,2,58,118,trial-118-montas,9,montas,mantiando,as,-as,rule_as,3,541.5996,4.0,5,10,10,29,Sub6012_118_montas.wav,7.7024,7.7024,fmri_naming_task-20251204-160035-HYIOT.log,3702
@@ -123,7 +123,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 122,3,2,122,trial-122-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,19.2826,4.0,1,11,11,31,Sub6012_122_gustar.wav,8.5661,8.5661,fmri_naming_task-20251204-161928-NNSPW.log,4566
 123,3,3,123,trial-123-recibis,11,recibis,rocibiondo,is,-is,rule_is,4,28.3828,4.0,1,11,11,31,Sub6012_123_recibis.wav,9.588,9.588,fmri_naming_task-20251204-161928-NNSPW.log,5588
 124,3,4,124,trial-124-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,38.4994,4.0,1,11,11,32,Sub6012_124_deprimir.wav,8.562,8.562,fmri_naming_task-20251204-161928-NNSPW.log,4562
-125,3,5,125,trial-125-dominas,5,dominas,damitiando,as,-as,rule_as,3,47.5826,4.0,1,11,11,31,Sub6012_125_dominas.wav,8.4105,8.4105,fmri_naming_task-20251204-161928-NNSPW.log,4410
+125,3,5,125,trial-125-dominas,5,dominas,daminiando,as,-as,rule_as,3,47.5826,4.0,1,11,11,31,Sub6012_125_dominas.wav,8.4105,8.4105,fmri_naming_task-20251204-161928-NNSPW.log,4410
 126,3,6,126,trial-126-montas,9,montas,mantiando,as,-as,rule_as,3,56.5158,4.0,1,11,11,32,Sub6012_126_montas.wav,8.9637,8.9637,fmri_naming_task-20251204-161928-NNSPW.log,4964
 127,3,7,127,trial-127-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,66.0158,4.0,1,11,11,33,Sub6012_127_comenzas.wav,9.9717,9.9717,fmri_naming_task-20251204-161928-NNSPW.log,5972
 128,3,8,128,trial-128-avanzar,1,avanzar,avanziando,ar,-ar,rule_ar,1,76.5157,4.0,1,11,11,32,Sub6012_128_avanzar.wav,9.2006,9.2006,fmri_naming_task-20251204-161928-NNSPW.log,5201
@@ -134,7 +134,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 133,3,13,133,trial-133-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,124.2652,4.0,2,12,12,34,Sub6012_133_deprimir.wav,9.0304,9.0304,fmri_naming_task-20251204-161928-NNSPW.log,5030
 134,3,14,134,trial-134-partir,10,partir,partiondo,ir,-ir,rule_ir,2,133.8318,4.0,2,12,12,35,Sub6012_134_partir.wav,11.4917,11.4917,fmri_naming_task-20251204-161928-NNSPW.log,7492
 135,3,15,135,trial-135-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,145.865,4.0,2,12,12,36,Sub6012_135_impedir.wav,7.7827,7.7827,fmri_naming_task-20251204-161928-NNSPW.log,3783
-136,3,16,136,trial-136-dominas,5,dominas,damitiando,as,-as,rule_as,3,154.1816,4.0,2,12,12,34,Sub6012_136_dominas.wav,8.4387,8.4387,fmri_naming_task-20251204-161928-NNSPW.log,4439
+136,3,16,136,trial-136-dominas,5,dominas,daminiando,as,-as,rule_as,3,154.1816,4.0,2,12,12,34,Sub6012_136_dominas.wav,8.4387,8.4387,fmri_naming_task-20251204-161928-NNSPW.log,4439
 137,3,17,137,trial-137-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,163.1482,4.0,2,12,12,35,Sub6012_137_comenzas.wav,8.4719,8.4719,fmri_naming_task-20251204-161928-NNSPW.log,4472
 138,3,18,138,trial-138-definis,3,definis,dofiniondo,is,-is,rule_is,4,172.1481,4.0,2,12,12,34,Sub6012_138_definis.wav,8.2813,8.2813,fmri_naming_task-20251204-161928-NNSPW.log,4281
 139,3,19,139,trial-139-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,180.9647,4.0,2,12,12,34,Sub6012_139_gustar.wav,8.6199,8.6199,fmri_naming_task-20251204-161928-NNSPW.log,4620
@@ -149,14 +149,14 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 148,3,28,148,trial-148-sentis,12,sentis,sontiondo,is,-is,rule_is,4,262.0306,4.0,3,13,13,37,Sub6012_148_sentis.wav,8.1715,8.1715,fmri_naming_task-20251204-161928-NNSPW.log,4171
 149,3,29,149,trial-149-lavar,8,lavar,laviando,ar,-ar,rule_ar,1,270.7305,4.0,3,13,13,39,Sub6012_149_lavar.wav,9.9666,9.9666,fmri_naming_task-20251204-161928-NNSPW.log,5967
 150,3,30,150,trial-150-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,281.247,4.0,3,13,13,37,Sub6012_150_deprimir.wav,7.3176,7.3176,fmri_naming_task-20251204-161928-NNSPW.log,3318
-151,3,31,151,trial-151-dominas,5,dominas,damitiando,as,-as,rule_as,3,289.097,4.0,3,13,13,38,Sub6012_151_dominas.wav,8.5715,8.5715,fmri_naming_task-20251204-161928-NNSPW.log,4572
+151,3,31,151,trial-151-dominas,5,dominas,daminiando,as,-as,rule_as,3,289.097,4.0,3,13,13,38,Sub6012_151_dominas.wav,8.5715,8.5715,fmri_naming_task-20251204-161928-NNSPW.log,4572
 152,3,32,152,trial-152-recibis,11,recibis,rocibiondo,is,-is,rule_is,4,298.2135,4.0,3,13,13,38,Sub6012_152_recibis.wav,8.5682,8.5682,fmri_naming_task-20251204-161928-NNSPW.log,4568
 153,3,33,153,trial-153-definis,3,definis,dofiniondo,is,-is,rule_is,4,307.3135,4.0,3,13,13,39,Sub6012_153_definis.wav,7.9614,7.9614,fmri_naming_task-20251204-161928-NNSPW.log,3961
 154,3,34,154,trial-154-partir,10,partir,partiondo,ir,-ir,rule_ir,2,315.7967,4.0,3,13,13,38,Sub6012_154_partir.wav,8.9692,8.9692,fmri_naming_task-20251204-161928-NNSPW.log,4969
 155,3,35,155,trial-155-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,325.2966,4.0,3,13,13,39,Sub6012_155_impedir.wav,10.2125,10.2125,fmri_naming_task-20251204-161928-NNSPW.log,6213
 156,3,36,156,trial-156-montas,9,montas,mantiando,as,-as,rule_as,3,336.0465,4.0,3,13,13,39,Sub6012_156_montas.wav,9.6483,9.6483,fmri_naming_task-20251204-161928-NNSPW.log,5648
 157,3,37,157,trial-157-sentis,12,sentis,sontiondo,is,-is,rule_is,4,346.2297,4.0,4,14,14,40,Sub6012_157_sentis.wav,9.0649,9.0649,fmri_naming_task-20251204-161928-NNSPW.log,5065
-158,3,38,158,trial-158-dominas,5,dominas,damitiando,as,-as,rule_as,3,355.8297,4.0,4,14,14,40,Sub6012_158_dominas.wav,10.4722,10.4722,fmri_naming_task-20251204-161928-NNSPW.log,6472
+158,3,38,158,trial-158-dominas,5,dominas,daminiando,as,-as,rule_as,3,355.8297,4.0,4,14,14,40,Sub6012_158_dominas.wav,10.4722,10.4722,fmri_naming_task-20251204-161928-NNSPW.log,6472
 159,3,39,159,trial-159-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,366.8295,4.0,4,14,14,40,Sub6012_159_gustar.wav,7.548,7.548,fmri_naming_task-20251204-161928-NNSPW.log,3548
 160,3,40,160,trial-160-avanzar,1,avanzar,avanziando,ar,-ar,rule_ar,1,374.9128,4.0,4,14,14,41,Sub6012_160_avanzar.wav,7.8802,7.8802,fmri_naming_task-20251204-161928-NNSPW.log,3880
 161,3,41,161,trial-161-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,383.3461,4.0,4,14,14,41,Sub6012_161_comenzas.wav,11.5292,11.5292,fmri_naming_task-20251204-161928-NNSPW.log,7529
@@ -175,7 +175,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 174,3,54,174,trial-174-lavar,8,lavar,laviando,ar,-ar,rule_ar,1,511.7615,4.0,5,15,15,45,Sub6012_174_lavar.wav,9.2852,9.2852,fmri_naming_task-20251204-161928-NNSPW.log,5285
 175,3,55,175,trial-175-partir,10,partir,partiondo,ir,-ir,rule_ir,2,521.5781,4.0,5,15,15,43,Sub6012_175_partir.wav,8.2271,8.2271,fmri_naming_task-20251204-161928-NNSPW.log,4227
 176,3,56,176,trial-176-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,530.3279,4.0,5,15,15,44,Sub6012_176_deprimir.wav,8.4717,8.4717,fmri_naming_task-20251204-161928-NNSPW.log,4472
-177,3,57,177,trial-177-dominas,5,dominas,damitiando,as,-as,rule_as,3,539.3279,4.0,5,15,15,44,Sub6012_177_dominas.wav,8.1916,8.1916,fmri_naming_task-20251204-161928-NNSPW.log,4192
+177,3,57,177,trial-177-dominas,5,dominas,daminiando,as,-as,rule_as,3,539.3279,4.0,5,15,15,44,Sub6012_177_dominas.wav,8.1916,8.1916,fmri_naming_task-20251204-161928-NNSPW.log,4192
 178,3,58,178,trial-178-sentis,12,sentis,sontiondo,is,-is,rule_is,4,548.0445,4.0,5,15,15,45,Sub6012_178_sentis.wav,8.0702,8.0702,fmri_naming_task-20251204-161928-NNSPW.log,4070
 179,3,59,179,trial-179-montas,9,montas,mantiando,as,-as,rule_as,3,556.6444,4.0,5,15,15,45,Sub6012_179_montas.wav,9.1753,9.1753,fmri_naming_task-20251204-161928-NNSPW.log,5175
 180,3,60,180,trial-180-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,566.3443,4.0,5,15,15,45,Sub6012_180_impedir.wav,8.0959,8.0959,fmri_naming_task-20251204-161928-NNSPW.log,4096
@@ -185,7 +185,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 184,4,4,184,trial-184-lavar,8,lavar,laviando,ar,-ar,rule_ar,1,40.7249,4.0,1,16,16,46,Sub6012_184_lavar.wav,9.4023,9.4023,fmri_naming_task-20251204-163019-ECZFY.log,5402
 185,4,5,185,trial-185-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,50.6581,4.0,1,16,16,46,Sub6012_185_comenzas.wav,8.1618,8.1618,fmri_naming_task-20251204-163019-ECZFY.log,4162
 186,4,6,186,trial-186-partir,10,partir,partiondo,ir,-ir,rule_ir,2,59.3414,4.0,1,16,16,47,Sub6012_186_partir.wav,8.3903,8.3903,fmri_naming_task-20251204-163019-ECZFY.log,4390
-187,4,7,187,trial-187-dominas,5,dominas,damitiando,as,-as,rule_as,3,68.258,4.0,1,16,16,47,Sub6012_187_dominas.wav,7.7821,7.7821,fmri_naming_task-20251204-163019-ECZFY.log,3782
+187,4,7,187,trial-187-dominas,5,dominas,daminiando,as,-as,rule_as,3,68.258,4.0,1,16,16,47,Sub6012_187_dominas.wav,7.7821,7.7821,fmri_naming_task-20251204-163019-ECZFY.log,3782
 188,4,8,188,trial-188-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,76.5745,4.0,1,16,16,47,Sub6012_188_gustar.wav,8.4924,8.4924,fmri_naming_task-20251204-163019-ECZFY.log,4492
 189,4,9,189,trial-189-definis,3,definis,dofiniondo,is,-is,rule_is,4,85.5911,4.0,1,16,16,48,Sub6012_189_definis.wav,8.7098,8.7098,fmri_naming_task-20251204-163019-ECZFY.log,4710
 190,4,10,190,trial-190-montas,9,montas,mantiando,as,-as,rule_as,3,94.8244,4.0,1,16,16,48,Sub6012_190_montas.wav,10.1048,10.1048,fmri_naming_task-20251204-163019-ECZFY.log,6105
@@ -200,12 +200,12 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 199,4,19,199,trial-199-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,185.5402,4.0,2,17,17,50,Sub6012_199_gustar.wav,11.0268,11.0268,fmri_naming_task-20251204-163019-ECZFY.log,7027
 200,4,20,200,trial-200-montas,9,montas,mantiando,as,-as,rule_as,3,197.09,4.0,2,17,17,50,Sub6012_200_montas.wav,9.9328,9.9328,fmri_naming_task-20251204-163019-ECZFY.log,5933
 201,4,21,201,trial-201-avanzar,1,avanzar,avanziando,ar,-ar,rule_ar,1,207.5566,4.0,2,17,17,51,Sub6012_201_avanzar.wav,10.3186,10.3186,fmri_naming_task-20251204-163019-ECZFY.log,6319
-202,4,22,202,trial-202-dominas,5,dominas,damitiando,as,-as,rule_as,3,218.4065,4.0,2,17,17,51,Sub6012_202_dominas.wav,7.1675,7.1675,fmri_naming_task-20251204-163019-ECZFY.log,3167
+202,4,22,202,trial-202-dominas,5,dominas,daminiando,as,-as,rule_as,3,218.4065,4.0,2,17,17,51,Sub6012_202_dominas.wav,7.1675,7.1675,fmri_naming_task-20251204-163019-ECZFY.log,3167
 203,4,23,203,trial-203-sentis,12,sentis,sontiondo,is,-is,rule_is,4,226.1064,4.0,2,17,17,50,Sub6012_203_sentis.wav,10.1448,10.1448,fmri_naming_task-20251204-163019-ECZFY.log,6145
 204,4,24,204,trial-204-definis,3,definis,dofiniondo,is,-is,rule_is,4,236.773,4.0,2,17,17,51,Sub6012_204_definis.wav,8.1347,8.1347,fmri_naming_task-20251204-163019-ECZFY.log,4135
 205,4,25,205,trial-205-partir,10,partir,partiondo,ir,-ir,rule_ir,2,245.4396,4.0,3,18,18,52,Sub6012_205_partir.wav,11.1503,11.1503,fmri_naming_task-20251204-163019-ECZFY.log,7150
 206,4,26,206,trial-206-lavar,8,lavar,laviando,ar,-ar,rule_ar,1,257.1228,4.0,3,18,18,52,Sub6012_206_lavar.wav,7.9833,7.9833,fmri_naming_task-20251204-163019-ECZFY.log,3983
-207,4,27,207,trial-207-dominas,5,dominas,damitiando,as,-as,rule_as,3,265.6394,4.0,3,18,18,52,Sub6012_207_dominas.wav,9.1678,9.1678,fmri_naming_task-20251204-163019-ECZFY.log,5168
+207,4,27,207,trial-207-dominas,5,dominas,daminiando,as,-as,rule_as,3,265.6394,4.0,3,18,18,52,Sub6012_207_dominas.wav,9.1678,9.1678,fmri_naming_task-20251204-163019-ECZFY.log,5168
 208,4,28,208,trial-208-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,275.3393,4.0,3,18,18,53,Sub6012_208_deprimir.wav,8.5676,8.5676,fmri_naming_task-20251204-163019-ECZFY.log,4568
 209,4,29,209,trial-209-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,284.4559,4.0,3,18,18,53,Sub6012_209_comenzas.wav,10.8246,10.8246,fmri_naming_task-20251204-163019-ECZFY.log,6825
 210,4,30,210,trial-210-definis,3,definis,dofiniondo,is,-is,rule_is,4,295.8058,4.0,3,18,18,52,Sub6012_210_definis.wav,8.6735,8.6735,fmri_naming_task-20251204-163019-ECZFY.log,4673
@@ -219,7 +219,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 218,4,38,218,trial-218-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,369.2884,4.0,4,19,19,55,Sub6012_218_impedir.wav,9.0462,9.0462,fmri_naming_task-20251204-163019-ECZFY.log,5046
 219,4,39,219,trial-219-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,378.8716,4.0,4,19,19,56,Sub6012_219_deprimir.wav,8.3153,8.3153,fmri_naming_task-20251204-163019-ECZFY.log,4315
 220,4,40,220,trial-220-partir,10,partir,partiondo,ir,-ir,rule_ir,2,387.7382,4.0,4,19,19,57,Sub6012_220_partir.wav,10.1481,10.1481,fmri_naming_task-20251204-163019-ECZFY.log,6148
-221,4,41,221,trial-221-dominas,5,dominas,damitiando,as,-as,rule_as,3,398.4214,4.0,4,19,19,55,Sub6012_221_dominas.wav,9.3094,9.3094,fmri_naming_task-20251204-163019-ECZFY.log,5309
+221,4,41,221,trial-221-dominas,5,dominas,daminiando,as,-as,rule_as,3,398.4214,4.0,4,19,19,55,Sub6012_221_dominas.wav,9.3094,9.3094,fmri_naming_task-20251204-163019-ECZFY.log,5309
 222,4,42,222,trial-222-sentis,12,sentis,sontiondo,is,-is,rule_is,4,408.2547,4.0,4,19,19,55,Sub6012_222_sentis.wav,7.1089,7.1089,fmri_naming_task-20251204-163019-ECZFY.log,3109
 223,4,43,223,trial-223-definis,3,definis,dofiniondo,is,-is,rule_is,4,415.8879,4.0,4,19,19,56,Sub6012_223_definis.wav,7.2147,7.2147,fmri_naming_task-20251204-163019-ECZFY.log,3215
 224,4,44,224,trial-224-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,423.6379,4.0,4,19,19,56,Sub6012_224_comenzas.wav,8.3008,8.3008,fmri_naming_task-20251204-163019-ECZFY.log,4301
@@ -233,7 +233,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 232,4,52,232,trial-232-recibis,11,recibis,rocibiondo,is,-is,rule_is,4,501.5538,4.0,5,20,20,59,Sub6012_232_recibis.wav,8.5907,8.5907,fmri_naming_task-20251204-163019-ECZFY.log,4591
 233,4,53,233,trial-233-montas,9,montas,mantiando,as,-as,rule_as,3,510.6703,4.0,5,20,20,58,Sub6012_233_montas.wav,8.4904,8.4904,fmri_naming_task-20251204-163019-ECZFY.log,4490
 234,4,54,234,trial-234-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,519.7036,4.0,5,20,20,59,Sub6012_234_comenzas.wav,10.3786,10.3786,fmri_naming_task-20251204-163019-ECZFY.log,6379
-235,4,55,235,trial-235-dominas,5,dominas,damitiando,as,-as,rule_as,3,530.6035,4.0,5,20,20,60,Sub6012_235_dominas.wav,8.5247,8.5247,fmri_naming_task-20251204-163019-ECZFY.log,4525
+235,4,55,235,trial-235-dominas,5,dominas,daminiando,as,-as,rule_as,3,530.6035,4.0,5,20,20,60,Sub6012_235_dominas.wav,8.5247,8.5247,fmri_naming_task-20251204-163019-ECZFY.log,4525
 236,4,56,236,trial-236-lavar,8,lavar,laviando,ar,-ar,rule_ar,1,539.6532,4.0,5,20,20,59,Sub6012_236_lavar.wav,7.736,7.736,fmri_naming_task-20251204-163019-ECZFY.log,3736
 237,4,57,237,trial-237-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,547.92,4.0,5,20,20,59,Sub6012_237_impedir.wav,10.5667,10.5667,fmri_naming_task-20251204-163019-ECZFY.log,6567
 238,4,58,238,trial-238-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,559.0199,4.0,5,20,20,60,Sub6012_238_gustar.wav,9.0798,9.0798,fmri_naming_task-20251204-163019-ECZFY.log,5080
@@ -242,7 +242,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 241,5,1,241,trial-241-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,10.5361,4.0,1,21,21,61,Sub6012_241_deprimir.wav,8.5515,8.5515,fmri_naming_task-20251204-164108-DBOAV.log,4551
 242,5,2,242,trial-242-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,19.6193,4.0,1,21,21,61,Sub6012_242_gustar.wav,7.597,7.597,fmri_naming_task-20251204-164108-DBOAV.log,3597
 243,5,3,243,trial-243-partir,10,partir,partiondo,ir,-ir,rule_ir,2,27.7692,4.0,1,21,21,62,Sub6012_243_partir.wav,7.8068,7.8068,fmri_naming_task-20251204-164108-DBOAV.log,3807
-244,5,4,244,trial-244-dominas,5,dominas,damitiando,as,-as,rule_as,3,36.1025,4.0,1,21,21,61,Sub6012_244_dominas.wav,8.2708,8.2708,fmri_naming_task-20251204-164108-DBOAV.log,4271
+244,5,4,244,trial-244-dominas,5,dominas,daminiando,as,-as,rule_as,3,36.1025,4.0,1,21,21,61,Sub6012_244_dominas.wav,8.2708,8.2708,fmri_naming_task-20251204-164108-DBOAV.log,4271
 245,5,5,245,trial-245-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,44.9024,4.0,1,21,21,63,Sub6012_245_impedir.wav,7.6594,7.6594,fmri_naming_task-20251204-164108-DBOAV.log,3659
 246,5,6,246,trial-246-avanzar,1,avanzar,avanziando,ar,-ar,rule_ar,1,53.0857,4.0,1,21,21,62,Sub6012_246_avanzar.wav,8.7484,8.7484,fmri_naming_task-20251204-164108-DBOAV.log,4748
 247,5,7,247,trial-247-definis,3,definis,dofiniondo,is,-is,rule_is,4,62.3689,4.0,1,21,21,61,Sub6012_247_definis.wav,9.9214,9.9214,fmri_naming_task-20251204-164108-DBOAV.log,5921
@@ -259,14 +259,14 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 258,5,18,258,trial-258-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,169.3179,4.0,2,22,22,65,Sub6012_258_deprimir.wav,8.3355,8.3355,fmri_naming_task-20251204-164108-DBOAV.log,4335
 259,5,19,259,trial-259-recibis,11,recibis,rocibiondo,is,-is,rule_is,4,178.1845,4.0,2,22,22,64,Sub6012_259_recibis.wav,9.3363,9.3363,fmri_naming_task-20251204-164108-DBOAV.log,5336
 260,5,20,260,trial-260-sentis,12,sentis,sontiondo,is,-is,rule_is,4,188.051,4.0,2,22,22,65,Sub6012_260_sentis.wav,7.5843,7.5843,fmri_naming_task-20251204-164108-DBOAV.log,3584
-261,5,21,261,trial-261-dominas,5,dominas,damitiando,as,-as,rule_as,3,196.1676,4.0,2,22,22,65,Sub6012_261_dominas.wav,7.5321,7.5321,fmri_naming_task-20251204-164108-DBOAV.log,3532
+261,5,21,261,trial-261-dominas,5,dominas,daminiando,as,-as,rule_as,3,196.1676,4.0,2,22,22,65,Sub6012_261_dominas.wav,7.5321,7.5321,fmri_naming_task-20251204-164108-DBOAV.log,3532
 262,5,22,262,trial-262-partir,10,partir,partiondo,ir,-ir,rule_ir,2,204.2342,4.0,2,22,22,66,Sub6012_262_partir.wav,9.6576,9.6576,fmri_naming_task-20251204-164108-DBOAV.log,5658
 263,5,23,263,trial-263-definis,3,definis,dofiniondo,is,-is,rule_is,4,214.4174,4.0,2,22,22,66,Sub6012_263_definis.wav,8.2516,8.2516,fmri_naming_task-20251204-164108-DBOAV.log,4252
 264,5,24,264,trial-264-montas,9,montas,mantiando,as,-as,rule_as,3,223.2007,4.0,2,22,22,66,Sub6012_264_montas.wav,9.2152,9.2152,fmri_naming_task-20251204-164108-DBOAV.log,5215
 265,5,25,265,trial-265-deprimir,4,deprimir,deprimiondo,ir,-ir,rule_ir,2,232.9506,4.0,3,23,23,67,Sub6012_265_deprimir.wav,9.5172,9.5172,fmri_naming_task-20251204-164108-DBOAV.log,5517
 266,5,26,266,trial-266-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,243.0005,4.0,3,23,23,68,Sub6012_266_impedir.wav,7.7649,7.7649,fmri_naming_task-20251204-164108-DBOAV.log,3765
 267,5,27,267,trial-267-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,251.3004,4.0,3,23,23,67,Sub6012_267_comenzas.wav,7.9722,7.9722,fmri_naming_task-20251204-164108-DBOAV.log,3972
-268,5,28,268,trial-268-dominas,5,dominas,damitiando,as,-as,rule_as,3,259.8003,4.0,3,23,23,68,Sub6012_268_dominas.wav,9.4995,9.4995,fmri_naming_task-20251204-164108-DBOAV.log,5499
+268,5,28,268,trial-268-dominas,5,dominas,daminiando,as,-as,rule_as,3,259.8003,4.0,3,23,23,68,Sub6012_268_dominas.wav,9.4995,9.4995,fmri_naming_task-20251204-164108-DBOAV.log,5499
 269,5,29,269,trial-269-gustar,6,gustar,gustiando,ar,-ar,rule_ar,1,269.8336,4.0,3,23,23,67,Sub6012_269_gustar.wav,10.0151,10.0151,fmri_naming_task-20251204-164108-DBOAV.log,6015
 270,5,30,270,trial-270-definis,3,definis,dofiniondo,is,-is,rule_is,4,280.3835,4.0,3,23,23,67,Sub6012_270_definis.wav,7.8515,7.8515,fmri_naming_task-20251204-164108-DBOAV.log,3852
 271,5,31,271,trial-271-lavar,8,lavar,laviando,ar,-ar,rule_ar,1,288.7834,4.0,3,23,23,68,Sub6012_271_lavar.wav,8.8848,8.8848,fmri_naming_task-20251204-164108-DBOAV.log,4885
@@ -276,7 +276,7 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 275,5,35,275,trial-275-sentis,12,sentis,sontiondo,is,-is,rule_is,4,330.633,4.0,3,23,23,68,Sub6012_275_sentis.wav,7.9428,7.9428,fmri_naming_task-20251204-164108-DBOAV.log,3943
 276,5,36,276,trial-276-recibis,11,recibis,rocibiondo,is,-is,rule_is,4,339.0996,4.0,3,23,23,69,Sub6012_276_recibis.wav,10.6097,10.6097,fmri_naming_task-20251204-164108-DBOAV.log,6610
 277,5,37,277,trial-277-lavar,8,lavar,laviando,ar,-ar,rule_ar,1,350.2328,4.0,4,24,24,70,Sub6012_277_lavar.wav,7.6427,7.6427,fmri_naming_task-20251204-164108-DBOAV.log,3643
-278,5,38,278,trial-278-dominas,5,dominas,damitiando,as,-as,rule_as,3,358.3994,4.0,4,24,24,70,Sub6012_278_dominas.wav,9.9234,9.9234,fmri_naming_task-20251204-164108-DBOAV.log,5923
+278,5,38,278,trial-278-dominas,5,dominas,daminiando,as,-as,rule_as,3,358.3994,4.0,4,24,24,70,Sub6012_278_dominas.wav,9.9234,9.9234,fmri_naming_task-20251204-164108-DBOAV.log,5923
 279,5,39,279,trial-279-montas,9,montas,mantiando,as,-as,rule_as,3,368.8493,4.0,4,24,24,71,Sub6012_279_montas.wav,8.7815,8.7815,fmri_naming_task-20251204-164108-DBOAV.log,4782
 280,5,40,280,trial-280-sentis,12,sentis,sontiondo,is,-is,rule_is,4,378.1659,4.0,4,24,24,70,Sub6012_280_sentis.wav,8.8653,8.8653,fmri_naming_task-20251204-164108-DBOAV.log,4865
 281,5,41,281,trial-281-definis,3,definis,dofiniondo,is,-is,rule_is,4,387.5658,4.0,4,24,24,71,Sub6012_281_definis.wav,8.9303,8.9303,fmri_naming_task-20251204-164108-DBOAV.log,4930
@@ -297,5 +297,5 @@ trial,session,session_trial,trial_index,trial_type,picture_type,picture_label,sp
 296,5,56,296,trial-296-partir,10,partir,partiondo,ir,-ir,rule_ir,2,533.1477,4.0,5,25,25,74,Sub6012_296_partir.wav,8.5554,8.5554,fmri_naming_task-20251204-164108-DBOAV.log,4555
 297,5,57,297,trial-297-montas,9,montas,mantiando,as,-as,rule_as,3,542.2309,4.0,5,25,25,73,Sub6012_297_montas.wav,9.0022,9.0022,fmri_naming_task-20251204-164108-DBOAV.log,5002
 298,5,58,298,trial-298-impedir,7,impedir,impediondo,ir,-ir,rule_ir,2,551.7642,4.0,5,25,25,75,Sub6012_298_impedir.wav,8.4138,8.4138,fmri_naming_task-20251204-164108-DBOAV.log,4414
-299,5,59,299,trial-299-dominas,5,dominas,damitiando,as,-as,rule_as,3,560.7141,4.0,5,25,25,74,Sub6012_299_dominas.wav,7.5697,7.5697,fmri_naming_task-20251204-164108-DBOAV.log,3570
+299,5,59,299,trial-299-dominas,5,dominas,daminiando,as,-as,rule_as,3,560.7141,4.0,5,25,25,74,Sub6012_299_dominas.wav,7.5697,7.5697,fmri_naming_task-20251204-164108-DBOAV.log,3570
 300,5,60,300,trial-300-comenzas,2,comenzas,camenziando,as,-as,rule_as,3,568.814,4.0,5,25,25,75,Sub6012_300_comenzas.wav,9.5915,9.5915,fmri_naming_task-20251204-164108-DBOAV.log,5591
