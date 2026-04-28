@@ -214,11 +214,16 @@ const App = (() => {
       });
 
       // Export buttons
-      document.getElementById('export-csv').addEventListener('click', () => Export.exportAllCSV(_currentDataset));
-      document.getElementById('export-events-csv').addEventListener('click', () => Export.exportEventsCSV(_currentDataset));
-      document.getElementById('export-qa-csv').addEventListener('click', () => Export.exportQACSV(_currentDataset));
-      document.getElementById('export-json').addEventListener('click', () => Export.exportJSON());
-      document.getElementById('export-participant').addEventListener('click', () => Export.exportCurrentParticipant(_currentDataset));
+      const saveThen = (fn) => {
+        ScoringUI.saveCurrentScore();
+        State.flushPendingSave();
+        fn();
+      };
+      document.getElementById('export-csv').addEventListener('click', () => saveThen(() => Export.exportAllCSV(_currentDataset)));
+      document.getElementById('export-events-csv').addEventListener('click', () => saveThen(() => Export.exportEventsCSV(_currentDataset)));
+      document.getElementById('export-qa-csv').addEventListener('click', () => saveThen(() => Export.exportQACSV(_currentDataset)));
+      document.getElementById('export-json').addEventListener('click', () => saveThen(() => Export.exportJSON()));
+      document.getElementById('export-participant').addEventListener('click', () => saveThen(() => Export.exportCurrentParticipant(_currentDataset)));
 
       // Scoring screen filter controls
       const sessionFilterScoring = document.getElementById('session-filter-scoring');
@@ -306,17 +311,29 @@ const App = (() => {
       // Set 4-second reference marker (picture display duration)
       WaveformViewer.setReferenceMarker(4000, '4 s reference');
 
-      // Set onset marker from saved score, auto-detection, or default (0ms)
+      const autoOnset = WaveformViewer.getAutoDetectedOnsetMs();
+      const autoOnsetEl = document.getElementById('auto-onset-value');
+      if (autoOnsetEl) {
+        autoOnsetEl.textContent = autoOnset != null ? autoOnset.toFixed(1) : 'N/A';
+      }
+
+      // Set onset marker from saved score or audio-based auto-detection.
       const existingScore = State.getScore(participant.id, trial.trial);
       const existingNoResponse = ScoringUI.isNoResponseScore(existingScore);
       if (existingNoResponse) {
         WaveformViewer.setOnsetMarker(null);
       } else if (existingScore && existingScore.onsetMs != null) {
         WaveformViewer.setOnsetMarker(existingScore.onsetMs);
+        ScoringUI.setOnsetStatus(existingScore.onsetStatus || null, { save: false });
+      } else if (autoOnset != null) {
+        WaveformViewer.setOnsetMarker(autoOnset);
+        ScoringUI.setOnsetStatus('auto', { save: false });
       } else if (trial.onset_ms_from_recording_start != null) {
         WaveformViewer.setOnsetMarker(trial.onset_ms_from_recording_start);
+        ScoringUI.setOnsetStatus('auto', { save: false });
       } else {
-        WaveformViewer.setOnsetMarker(0);
+        WaveformViewer.setOnsetMarker(null);
+        ScoringUI.setOnsetStatus(null, { save: false });
       }
 
       const utteranceCount = existingScore && existingScore.utteranceCount

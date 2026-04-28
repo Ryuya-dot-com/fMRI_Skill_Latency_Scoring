@@ -6,6 +6,7 @@ const ScoringUI = (() => {
   const NO_SPEECH_STATUSES = ['no_speech_true', 'no_speech_technical', 'no_speech_nonlexical', 'no_speech'];
 
   const ONSET_STATUS_LABELS = {
+    auto: 'auto',
     confirmed: 'confirmed', corrected: 'corrected', manual: 'manual',
     offset_manual: 'offset click',
     no_speech_true: '無発話', no_speech_technical: '機器不良',
@@ -374,10 +375,25 @@ const ScoringUI = (() => {
     }
   }
 
-  function setOnsetStatus(status) {
+  function setOnsetStatus(status, options = {}) {
+    const { save = true } = options;
+    const statusEl = document.getElementById('latency-status-display');
+    if (statusEl) {
+      statusEl.dataset.status = status || '';
+      statusEl.textContent = status ? (ONSET_STATUS_LABELS[status] || status) : '--';
+      statusEl.style.color = status === 'confirmed' ? 'var(--success)' :
+        (status ? 'var(--warning)' : 'var(--text-muted)');
+    }
     highlightOnsetButton(status);
-    saveCurrentScore();
-    if (_onScoreChanged) _onScoreChanged();
+    if (save) {
+      saveCurrentScore();
+      if (_onScoreChanged) _onScoreChanged();
+    }
+  }
+
+  function getOnsetStatus() {
+    const el = document.getElementById('latency-status-display');
+    return el && el.dataset.status ? el.dataset.status : null;
   }
 
   function renderTrial(trial, participant, dataset) {
@@ -418,15 +434,13 @@ const ScoringUI = (() => {
     const autoOnsetEl = document.getElementById('auto-onset-value');
     autoOnsetEl.textContent = trial.onset_ms_from_recording_start != null
       ? trial.onset_ms_from_recording_start.toFixed(1)
-      : 'N/A';
+      : '--';
 
     // Auto-detected offset info (set after audio loads in app.js)
     const autoOffsetEl = document.getElementById('auto-offset-value');
     if (autoOffsetEl) autoOffsetEl.textContent = '--';
 
-    const statusEl = document.getElementById('latency-status-display');
-    statusEl.textContent = '--';
-    statusEl.style.color = 'var(--text-muted)';
+    setOnsetStatus(null, { save: false });
 
     // Score hint
     const hintEl = document.getElementById('score-hint');
@@ -437,7 +451,7 @@ const ScoringUI = (() => {
     if (existingScore) {
       const noResponseScore = isNoResponseScore(existingScore);
       highlightScoreButton(existingScore.accuracy);
-      highlightOnsetButton(existingScore.onsetStatus);
+      setOnsetStatus(noResponseScore ? existingScore.onsetStatus : (existingScore.onsetStatus || null), { save: false });
       document.getElementById('trial-notes').value = existingScore.notes || '';
       document.getElementById('onset-ms-input').value =
         !noResponseScore && existingScore.onsetMs != null ? existingScore.onsetMs.toFixed(1) : '';
@@ -455,14 +469,9 @@ const ScoringUI = (() => {
       if (productionType) productionType.value = existingScore.productionType || inferProductionType(existingScore);
       const timingQuality = document.getElementById('timing-quality');
       if (timingQuality) timingQuality.value = existingScore.timingQuality || 'clear';
-      // Update status display
-      if (existingScore.onsetStatus) {
-        statusEl.textContent = ONSET_STATUS_LABELS[existingScore.onsetStatus] || existingScore.onsetStatus;
-        statusEl.style.color = existingScore.onsetStatus === 'confirmed' ? 'var(--success)' : 'var(--warning)';
-      }
     } else {
       clearScoreButtons();
-      clearOnsetButtons();
+      setOnsetStatus(null, { save: false });
       document.getElementById('trial-notes').value = '';
       document.getElementById('onset-ms-input').value =
         trial.onset_ms_from_recording_start != null ? trial.onset_ms_from_recording_start.toFixed(1) : '';
@@ -503,7 +512,7 @@ const ScoringUI = (() => {
       return;
     }
 
-    highlightOnsetButton(status);
+    setOnsetStatus(status, { save: false });
 
     if (status === 'manual') {
       clearMarkerClickButtons();
@@ -522,13 +531,6 @@ const ScoringUI = (() => {
       if (utteranceCountEl) utteranceCountEl.value = '1';
       renderUtteranceControls(1, []);
       setOffsetStatus(null, { save: false });
-    }
-
-    // Update status display
-    const statusEl = document.getElementById('latency-status-display');
-    if (statusEl) {
-      statusEl.textContent = ONSET_STATUS_LABELS[status] || status;
-      statusEl.style.color = status === 'confirmed' ? 'var(--success)' : 'var(--warning)';
     }
 
     saveCurrentScore();
@@ -565,8 +567,7 @@ const ScoringUI = (() => {
   }
 
   function getActiveOnsetStatus() {
-    const active = document.querySelector('.btn-onset.active');
-    return active ? active.dataset.status : null;
+    return getOnsetStatus();
   }
 
   function saveCurrentScore() {
@@ -590,6 +591,11 @@ const ScoringUI = (() => {
     let firstSpeechMs = onsetMs != null ? onsetMs : null;
     let offsetMs = WaveformViewer.getCurrentOffsetMs();
     let offsetStatus = getOffsetStatus();
+    const autoDetection = WaveformViewer.getAutoDetectionSummary();
+    let autoOnsetMs = WaveformViewer.getAutoDetectedOnsetMs();
+    let autoOffsetMs = WaveformViewer.getAutoDetectedOffsetMs();
+    const autoTimingQuality = autoDetection ? autoDetection.quality : '';
+    const autoTimingIssue = autoDetection ? autoDetection.issue : '';
 
     if (accuracy === 'NR' || isNoSpeechStatus(onsetStatus)) {
       onsetMs = null;
@@ -602,7 +608,7 @@ const ScoringUI = (() => {
     const hasData = accuracy != null || onsetStatus != null || notes.trim() ||
       doubleAnswerCode || productionType !== 'single' || timingQuality !== 'clear' ||
       utteranceCount !== 1 || onsetMs != null || firstSpeechMs != null ||
-      offsetMs != null || offsetStatus != null;
+      offsetMs != null || offsetStatus != null || autoOnsetMs != null || autoOffsetMs != null;
     if (!hasData) return;
 
     State.setScore(_currentParticipant.id, _currentTrial.trial, {
@@ -614,6 +620,10 @@ const ScoringUI = (() => {
       offsetMs,
       offsetStatus,
       onsetStatus,
+      autoOnsetMs,
+      autoOffsetMs,
+      autoTimingQuality,
+      autoTimingIssue,
       productionType,
       timingQuality,
       doubleAnswerCode,
@@ -652,6 +662,9 @@ const ScoringUI = (() => {
     if (!isNR) {
       if (score.onsetMs == null) issues.push('Onset');
       if (score.offsetMs == null) issues.push('Offset');
+      if (score.onsetMs != null && (!score.onsetStatus || score.onsetStatus === 'auto')) {
+        issues.push('Onset confirm');
+      }
       if (score.onsetMs != null && score.offsetMs != null && score.offsetMs < score.onsetMs) {
         issues.push('Offset < Onset');
       }
@@ -690,13 +703,20 @@ const ScoringUI = (() => {
   }
 
   function confirmOnset() {
+    if (WaveformViewer.getCurrentOnsetMs() == null) {
+      const input = document.getElementById('onset-ms-input');
+      const ms = input ? parseFloat(input.value) : NaN;
+      if (!isNaN(ms) && ms >= 0) {
+        WaveformViewer.setOnsetMarker(ms);
+      }
+    }
     handleOnsetAction('confirmed');
   }
 
   return {
     init, renderTrial, setAccuracyScore, handleOnsetAction,
     saveCurrentScore, scoreByKey, confirmOnset, getActiveScore, getActiveOnsetStatus,
-    handleOffsetChange, confirmOffset, setOffsetStatus, startOffsetClickSet,
+    handleOffsetChange, confirmOffset, setOnsetStatus, setOffsetStatus, startOffsetClickSet,
     isNoSpeechStatus, isNoResponseScore, getAdditionalUtteranceMarkers,
     getCompletionIssues
   };

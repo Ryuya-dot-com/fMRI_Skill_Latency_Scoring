@@ -31,6 +31,10 @@ const Export = (() => {
     return score.accuracy === 'NR' || isNoSpeechStatus(score.onsetStatus);
   }
 
+  function isScored(score) {
+    return !!score && (score.accuracy != null || (score.onsetStatus != null && score.onsetStatus !== 'auto'));
+  }
+
   function getFirstSpeechMs(score, isNR) {
     if (isNR) return null;
     return score.onsetMs != null ? score.onsetMs : null;
@@ -62,22 +66,6 @@ const Export = (() => {
     return firstSpeechMs != null ? [firstSpeechMs, ...additionalMarkers] : additionalMarkers;
   }
 
-  function hasScoreData(score) {
-    return !!score && (
-      score.accuracy != null ||
-      score.onsetStatus != null ||
-      score.onsetMs != null ||
-      score.offsetMs != null ||
-      score.firstSpeechMs != null ||
-      score.offsetStatus != null ||
-      score.doubleAnswerCode ||
-      score.productionType ||
-      score.timingQuality ||
-      (Array.isArray(score.utteranceMarkersMs) && score.utteranceMarkersMs.length > 0) ||
-      (score.notes && score.notes.trim())
-    );
-  }
-
   function buildQaSummary(score, trial, isNR, timingFields) {
     const flags = [];
     const productionType = inferProductionType(score);
@@ -86,7 +74,7 @@ const Export = (() => {
     const utteranceMarkers = getAdditionalUtteranceMarkers(score, isNR);
     const recordingEndMs = trial.recordingDurationS != null ? trial.recordingDurationS * 1000 : null;
 
-    if (!hasScoreData(score)) {
+    if (!isScored(score)) {
       flags.push('unscored');
     }
 
@@ -107,8 +95,18 @@ const Export = (() => {
       if (score.offsetMs == null) flags.push('missing_offset');
       if (timingFields.timing_issue) flags.push(timingFields.timing_issue);
 
+      if (score.onsetMs != null && (!score.onsetStatus || score.onsetStatus === 'auto')) {
+        flags.push('onset_unconfirmed');
+      }
       if (score.offsetMs != null && (!score.offsetStatus || score.offsetStatus === 'auto')) {
         flags.push('offset_unconfirmed');
+      }
+      if ((score.onsetStatus === 'auto' || score.offsetStatus === 'auto') &&
+          score.autoTimingQuality && score.autoTimingQuality !== 'ok') {
+        flags.push(`auto_timing_${score.autoTimingQuality}`);
+      }
+      if ((score.onsetStatus === 'auto' || score.offsetStatus === 'auto') && score.autoTimingIssue) {
+        flags.push(`auto_${score.autoTimingIssue}`);
       }
 
       if (score.onsetMs != null && trial.stimDurationS != null && score.onsetMs > trial.stimDurationS * 1000) {
@@ -174,6 +172,16 @@ const Export = (() => {
 
   function roundMs(ms) {
     return Math.round(ms * 1000) / 1000;
+  }
+
+  function roundMsOrBlank(ms) {
+    return ms != null && !isNaN(ms) ? roundMs(ms) : '';
+  }
+
+  function deltaMsOrBlank(raterMs, autoMs) {
+    return raterMs != null && !isNaN(raterMs) && autoMs != null && !isNaN(autoMs)
+      ? roundMs(raterMs - autoMs)
+      : '';
   }
 
   function roundSec(ms) {
@@ -283,6 +291,12 @@ const Export = (() => {
         onset_status: score.onsetStatus || '',
         offset_ms_rater: (!isNR && score.offsetMs != null) ? Math.round(score.offsetMs * 1000) / 1000 : '',
         offset_status: (!isNR && score.offsetStatus) ? score.offsetStatus : '',
+        auto_onset_ms: roundMsOrBlank(score.autoOnsetMs),
+        auto_offset_ms: roundMsOrBlank(score.autoOffsetMs),
+        onset_auto_delta_ms: (!isNR) ? deltaMsOrBlank(score.onsetMs, score.autoOnsetMs) : '',
+        offset_auto_delta_ms: (!isNR) ? deltaMsOrBlank(score.offsetMs, score.autoOffsetMs) : '',
+        auto_timing_quality: score.autoTimingQuality || '',
+        auto_timing_issue: score.autoTimingIssue || '',
         ...timingFields,
         ...qaSummary,
         double_answer_code: score.doubleAnswerCode || '',
@@ -354,6 +368,8 @@ const Export = (() => {
       'utterance_count', 'utterance_onsets_ms',
       'onset_ms_rater', 'first_speech_ms_rater', 'onset_status',
       'offset_ms_rater', 'offset_status',
+      'auto_onset_ms', 'auto_offset_ms', 'onset_auto_delta_ms', 'offset_auto_delta_ms',
+      'auto_timing_quality', 'auto_timing_issue',
       'pre_speech_onset_s', 'pre_speech_duration_s',
       'speech_onset_s_rater', 'speech_duration_s_rater',
       'post_speech_onset_s', 'post_speech_duration_s',
@@ -413,7 +429,10 @@ const Export = (() => {
         production_type: productionType,
         timing_quality: timingQuality,
         double_answer_code: score.doubleAnswerCode || '',
+        onset_status: (!isNR && score.onsetStatus) ? score.onsetStatus : '',
         offset_status: (!isNR && score.offsetStatus) ? score.offsetStatus : '',
+        auto_onset_ms: roundMsOrBlank(score.autoOnsetMs),
+        auto_offset_ms: roundMsOrBlank(score.autoOffsetMs),
         timing_valid: timing.timing_valid,
         timing_issue: timing.timing_issue,
         qa_severity: qaSummary.qa_severity,
@@ -464,7 +483,8 @@ const Export = (() => {
     const headers = [
       'rater_id', 'participant_id', 'trial', 'session', 'session_trial',
       'picture_label', 'sprang_form', 'accuracy_score', 'production_type',
-      'timing_quality', 'double_answer_code', 'offset_status', 'event_type', 'event_index',
+      'timing_quality', 'double_answer_code', 'onset_status', 'offset_status',
+      'auto_onset_ms', 'auto_offset_ms', 'event_type', 'event_index',
       'onset_s', 'duration_s', 'source', 'timing_valid', 'timing_issue',
       'qa_severity', 'qa_flags', 'audio_file', 'notes'
     ];
@@ -504,6 +524,8 @@ const Export = (() => {
       'timing_quality', 'double_answer_code', 'onset_status', 'offset_status',
       'utterance_count', 'utterance_onsets_ms',
       'onset_ms_rater', 'first_speech_ms_rater', 'offset_ms_rater',
+      'auto_onset_ms', 'auto_offset_ms', 'onset_auto_delta_ms', 'offset_auto_delta_ms',
+      'auto_timing_quality', 'auto_timing_issue',
       'speech_duration_ms_rater', 'timing_valid', 'timing_issue',
       'qa_severity', 'qa_flag_count', 'qa_flags',
       'audio_file', 'notes', 'scored_at'

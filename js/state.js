@@ -108,16 +108,21 @@ const State = (() => {
     debouncedSave();
   }
 
+  function isScored(score) {
+    if (!score) return false;
+    return score.accuracy != null || (score.onsetStatus != null && score.onsetStatus !== 'auto');
+  }
+
   function getTotalScoredCount() {
     if (!_state) return 0;
-    return Object.values(_state.scores).filter(s => s.accuracy != null || s.onsetStatus != null).length;
+    return Object.values(_state.scores).filter(isScored).length;
   }
 
   function getParticipantScoredCount(participantId, trials) {
     if (!_state || !trials) return 0;
     return trials.filter(t => {
       const s = _state.scores[`${participantId}_${t.trial}`];
-      return s && (s.accuracy != null || s.onsetStatus != null);
+      return isScored(s);
     }).length;
   }
 
@@ -144,7 +149,7 @@ const State = (() => {
 
   return {
     create, load, get, save, debouncedSave, flushPendingSave, setPosition,
-    getScore, setScore, getTotalScoredCount,
+    getScore, setScore, getTotalScoredCount, isScored,
     getParticipantScoredCount, isParticipantComplete,
     listSessions
   };

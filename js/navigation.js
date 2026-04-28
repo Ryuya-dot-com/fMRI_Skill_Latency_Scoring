@@ -204,7 +204,7 @@ const Navigation = (() => {
       for (let ti = tStart; ti < p.trials.length; ti++) {
         const trial = p.trials[ti];
         const score = State.getScore(pid, trial.trial);
-        if (!score || (score.accuracy == null && score.onsetStatus == null)) {
+        if (!State.isScored(score)) {
           navigate(pi, ti);
           return;
         }
@@ -221,7 +221,7 @@ const Navigation = (() => {
       for (let ti = 0; ti < tEnd; ti++) {
         const trial = p.trials[ti];
         const score = State.getScore(pid, trial.trial);
-        if (!score || (score.accuracy == null && score.onsetStatus == null)) {
+        if (!State.isScored(score)) {
           navigate(pi, ti);
           return;
         }

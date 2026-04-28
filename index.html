@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>fMRI Voice Onset Scorer</title>
-  <link rel="stylesheet" href="css/style.css?v=20260428-u-colors-v3">
+  <link rel="stylesheet" href="css/style.css?v=20260428-auto-onset-v4">
 </head>
 <body>
   <!-- ── Setup Screen ── -->
@@ -258,6 +258,7 @@
       <section>
         <h3>2. 発話タイミング</h3>
         <p>まず発話回数を選択します。1回がデフォルトで、赤い Onset が U1 です。2回以上を選ぶと U2, U3, U4 の追加発話開始線を表示します。</p>
+        <p>Onset と Offset は音声から自動候補が配置されます。自動候補は初期値なので、必ず Confirm またはドラッグ修正してください。</p>
         <p>赤い線は解析に使う Onset / U1、追加発話は U2 = オレンジ、U3 = 紫、U4 = 緑、青い線は Offset です。</p>
         <p>CSV には pre-speech / speech / post-speech の onset と duration が秒単位で出力されます。Speech duration は Offset - Onset で計算されます。</p>
         <p>Export Events (CSV) は fMRI 解析向けの long format です。各試行を pre_speech, speech, post_speech, utterance_start に分けて出力します。</p>
@@ -385,13 +386,13 @@
   <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/minimap.min.js"></script>
   <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/timeline.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-  <script src="js/csv-loader.js?v=20260428-u-colors-v3"></script>
-  <script src="js/state.js?v=20260428-u-colors-v3"></script>
-  <script src="js/waveform.js?v=20260428-u-colors-v3"></script>
-  <script src="js/scoring-ui.js?v=20260428-u-colors-v3"></script>
-  <script src="js/navigation.js?v=20260428-u-colors-v3"></script>
-  <script src="js/export.js?v=20260428-u-colors-v3"></script>
-  <script src="js/instructions.js?v=20260428-u-colors-v3"></script>
-  <script src="js/app.js?v=20260428-u-colors-v3"></script>
+  <script src="js/csv-loader.js?v=20260428-auto-onset-v4"></script>
+  <script src="js/state.js?v=20260428-auto-onset-v4"></script>
+  <script src="js/waveform.js?v=20260428-auto-onset-v4"></script>
+  <script src="js/scoring-ui.js?v=20260428-auto-onset-v4"></script>
+  <script src="js/navigation.js?v=20260428-auto-onset-v4"></script>
+  <script src="js/export.js?v=20260428-auto-onset-v4"></script>
+  <script src="js/instructions.js?v=20260428-auto-onset-v4"></script>
+  <script src="js/app.js?v=20260428-auto-onset-v4"></script>
 </body>
 </html>

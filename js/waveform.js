@@ -18,7 +18,9 @@ const WaveformViewer = (() => {
   let _currentOnsetMs = null;
   let _currentOffsetMs = null;
   let _currentUtteranceMs = [];
+  let _autoDetectedOnsetMs = null;
   let _autoDetectedOffsetMs = null;
+  let _autoDetectionSummary = null;
   const ADDITIONAL_UTTERANCE_COLORS = [
     'rgba(255, 159, 67, 0.95)',
     'rgba(156, 89, 255, 0.95)',
@@ -37,6 +39,12 @@ const WaveformViewer = (() => {
   const MIN_ZOOM = 1;
   const MAX_ZOOM = 20;
   const MARKER_WIDTH_SEC = 0.035;
+  const DETECTION_WINDOW_SEC = 0.01;
+  const DETECTION_SKIP_START_SEC = 0.15;
+  const DETECTION_MIN_THRESHOLD = 0.008;
+  const DETECTION_SUSTAINED_FRAMES = 5;
+  const DETECTION_MIN_HIT_FRAMES = 3;
+  const DETECTION_CLUSTER_SILENCE_FRAMES = 40; // 400ms below threshold closes the first speech cluster.
 
   const containerEl = '#waveform-container';
 
@@ -168,7 +176,9 @@ const WaveformViewer = (() => {
     _currentOnsetMs = null;
     _currentOffsetMs = null;
     _currentUtteranceMs = [];
+    _autoDetectedOnsetMs = null;
     _autoDetectedOffsetMs = null;
+    _autoDetectionSummary = null;
     _zoomLevel = 1;
     updateZoomDisplay();
 
@@ -176,8 +186,9 @@ const WaveformViewer = (() => {
       wavesurfer.once('ready', () => {
         updateTimeDisplay();
         applyZoom();
-        // Auto-detect offset from audio buffer
-        _autoDetectedOffsetMs = detectOffset();
+        _autoDetectionSummary = detectSpeechBounds();
+        _autoDetectedOnsetMs = _autoDetectionSummary.onsetMs;
+        _autoDetectedOffsetMs = _autoDetectionSummary.offsetMs;
         resolve();
       });
       wavesurfer.once('error', (err) => reject(err));
@@ -356,35 +367,137 @@ const WaveformViewer = (() => {
     });
   }
 
-  // ── Offset Detection & Marker ──
-  // Auto-detected offset is an INITIAL ESTIMATE only (end-of-signal RMS scan).
-  // The ground truth for fMRI analysis is the rater-confirmed offset_ms_rater
-  // stored in the exported CSV/Excel, after manual verification and correction.
+  // ── Speech Boundary Detection & Markers ──
+  // Auto-detected onset/offset are INITIAL ESTIMATES only. The ground truth
+  // for fMRI analysis is the rater-confirmed onset_ms_rater/offset_ms_rater.
 
-  function detectOffset() {
-    if (!wavesurfer) return null;
-    const backend = wavesurfer.getDecodedData();
-    if (!backend || backend.numberOfChannels === 0) return null;
+  function quantile(sortedValues, q) {
+    if (!sortedValues.length) return 0;
+    const pos = (sortedValues.length - 1) * q;
+    const base = Math.floor(pos);
+    const rest = pos - base;
+    const next = sortedValues[base + 1];
+    return next == null ? sortedValues[base] : sortedValues[base] + rest * (next - sortedValues[base]);
+  }
 
-    const data = backend.getChannelData(0);
-    const sampleRate = backend.sampleRate;
-    const windowSamples = Math.floor(sampleRate * 0.01); // 10ms window
-    const threshold = 0.01;
-
-    // Scan from end backwards to find last sample above threshold
-    for (let i = data.length - windowSamples; i >= 0; i -= windowSamples) {
+  function computeRmsFrames(audioBuffer, windowSamples) {
+    const frames = [];
+    const channelCount = audioBuffer.numberOfChannels;
+    for (let start = 0; start < audioBuffer.length; start += windowSamples) {
+      const end = Math.min(start + windowSamples, audioBuffer.length);
       let sumSq = 0;
-      for (let j = i; j < i + windowSamples && j < data.length; j++) {
-        sumSq += data[j] * data[j];
+      let count = 0;
+      for (let ch = 0; ch < channelCount; ch++) {
+        const data = audioBuffer.getChannelData(ch);
+        for (let i = start; i < end; i++) {
+          sumSq += data[i] * data[i];
+          count++;
+        }
       }
-      const rms = Math.sqrt(sumSq / windowSamples);
-      if (rms > threshold) {
-        // Found signal — offset is end of this window
-        const offsetMs = ((i + windowSamples) / sampleRate) * 1000;
-        return offsetMs;
+      frames.push(Math.sqrt(sumSq / Math.max(1, count)));
+    }
+    return frames;
+  }
+
+  function hasSustainedSignal(frames, index, threshold) {
+    let hits = 0;
+    const end = Math.min(frames.length, index + DETECTION_SUSTAINED_FRAMES);
+    for (let i = index; i < end; i++) {
+      if (frames[i] >= threshold) hits++;
+    }
+    return hits >= DETECTION_MIN_HIT_FRAMES;
+  }
+
+  function classifyDetection(onsetMs, offsetMs, peakRms, threshold) {
+    if (onsetMs == null || offsetMs == null) return { quality: 'missing', issue: 'no_speech_detected' };
+    const durationMs = offsetMs - onsetMs;
+    if (durationMs < 0) return { quality: 'review', issue: 'offset_before_onset' };
+    if (durationMs < 250) return { quality: 'review', issue: 'speech_duration_short' };
+    if (durationMs > 3000) return { quality: 'review', issue: 'speech_duration_long' };
+    if (threshold > 0 && peakRms / threshold < 1.8) return { quality: 'review', issue: 'low_signal_margin' };
+    return { quality: 'ok', issue: '' };
+  }
+
+  function detectSpeechBounds() {
+    const blank = {
+      onsetMs: null,
+      offsetMs: null,
+      threshold: null,
+      noiseFloor: null,
+      peakRms: null,
+      quality: 'missing',
+      issue: 'no_audio'
+    };
+
+    if (!wavesurfer) return blank;
+    const backend = wavesurfer.getDecodedData();
+    if (!backend || backend.numberOfChannels === 0) return blank;
+
+    const sampleRate = backend.sampleRate;
+    const windowSamples = Math.max(1, Math.floor(sampleRate * DETECTION_WINDOW_SEC));
+    const frames = computeRmsFrames(backend, windowSamples);
+    if (!frames.length) return blank;
+
+    const sorted = frames.slice().sort((a, b) => a - b);
+    const noiseFloor = quantile(sorted, 0.2);
+    const noiseMedian = quantile(sorted, 0.5);
+    const noiseHigh = quantile(sorted, 0.8);
+    const peakRms = sorted[sorted.length - 1] || 0;
+    const threshold = Math.max(
+      DETECTION_MIN_THRESHOLD,
+      noiseFloor * 4,
+      noiseMedian * 2.5,
+      noiseHigh * 1.35,
+      peakRms * 0.06
+    );
+    const lowThreshold = Math.max(DETECTION_MIN_THRESHOLD * 0.5, noiseMedian * 1.4, threshold * 0.45);
+    const startFrame = Math.min(frames.length - 1, Math.ceil(DETECTION_SKIP_START_SEC / DETECTION_WINDOW_SEC));
+
+    if (peakRms < DETECTION_MIN_THRESHOLD) {
+      return { ...blank, threshold, noiseFloor, peakRms, issue: 'low_signal' };
+    }
+
+    let onsetFrame = null;
+    for (let i = startFrame; i < frames.length; i++) {
+      if (frames[i] >= threshold && hasSustainedSignal(frames, i, threshold)) {
+        onsetFrame = i;
+        break;
       }
     }
-    return null;
+
+    if (onsetFrame == null) {
+      return { ...blank, threshold, noiseFloor, peakRms, issue: 'no_speech_detected' };
+    }
+
+    while (onsetFrame > startFrame && frames[onsetFrame - 1] >= lowThreshold) {
+      onsetFrame--;
+    }
+
+    let offsetFrame = onsetFrame;
+    let silenceFrames = 0;
+    for (let i = onsetFrame; i < frames.length; i++) {
+      if (frames[i] >= lowThreshold) {
+        offsetFrame = i;
+        silenceFrames = 0;
+      } else {
+        silenceFrames++;
+        if (silenceFrames >= DETECTION_CLUSTER_SILENCE_FRAMES) break;
+      }
+    }
+
+    const onsetMs = (onsetFrame * windowSamples / sampleRate) * 1000;
+    const offsetMs = (Math.min((offsetFrame + 1) * windowSamples, backend.length) / sampleRate) * 1000;
+    const classification = classifyDetection(onsetMs, offsetMs, peakRms, threshold);
+
+    return {
+      onsetMs,
+      offsetMs,
+      threshold,
+      noiseFloor,
+      peakRms,
+      quality: classification.quality,
+      issue: classification.issue
+    };
   }
 
   function setOffsetMarker(ms) {
@@ -477,7 +590,9 @@ const WaveformViewer = (() => {
   function getCurrentOffsetMs() { return _currentOffsetMs; }
   function getCurrentFirstSpeechMs() { return _currentOnsetMs; }
   function getCurrentUtteranceMarkersMs() { return _currentUtteranceMs.slice(); }
+  function getAutoDetectedOnsetMs() { return _autoDetectedOnsetMs; }
   function getAutoDetectedOffsetMs() { return _autoDetectedOffsetMs; }
+  function getAutoDetectionSummary() { return _autoDetectionSummary ? { ..._autoDetectionSummary } : null; }
 
   function onOnsetChanged(fn) { _onOnsetChanged = fn; }
   function onOffsetChanged(fn) { _onOffsetChanged = fn; }
@@ -495,7 +610,8 @@ const WaveformViewer = (() => {
     setReferenceMarker, clearMarkers,
     enableClickToSet, play, stop, playFromOnset, setPlaybackRate,
     isPlaying, getCurrentOnsetMs, getCurrentOffsetMs,
-    getCurrentFirstSpeechMs, getCurrentUtteranceMarkersMs, getAutoDetectedOffsetMs,
+    getCurrentFirstSpeechMs, getCurrentUtteranceMarkersMs,
+    getAutoDetectedOnsetMs, getAutoDetectedOffsetMs, getAutoDetectionSummary,
     onOnsetChanged, onOffsetChanged, onFirstSpeechChanged,
     updateOnsetDisplay, updateOffsetDisplay, updateFirstSpeechDisplay, updateUtteranceDisplay, updateDurationDisplay,
     zoomIn, zoomOut, zoomReset, destroy
