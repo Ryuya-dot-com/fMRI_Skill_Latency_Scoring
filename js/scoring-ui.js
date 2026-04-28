@@ -31,6 +31,7 @@ const ScoringUI = (() => {
       setupOnsetManualInput();
       setupOffsetManualInput();
       setupUtteranceControls();
+      setupProductionFields();
       setupDoubleAnswerField();
       setupNotesField();
     }
@@ -130,7 +131,35 @@ const ScoringUI = (() => {
           WaveformViewer.setUtteranceMarker(index, null);
           saveCurrentScore();
           if (_onScoreChanged) _onScoreChanged();
+        } else if (action === 'copy_onset') {
+          const ms = WaveformViewer.getCurrentUtteranceMarkersMs()[index];
+          if (ms != null && !isNaN(ms)) {
+            WaveformViewer.setOnsetMarker(ms);
+            setOnsetStatus('manual');
+          }
         }
+      });
+    }
+  }
+
+  function setupProductionFields() {
+    const productionType = document.getElementById('production-type');
+    if (productionType) {
+      productionType.addEventListener('change', () => {
+        const value = productionType.value;
+        if (value === 'double_answer' || value === 'false_start' || value === 'self_correction') {
+          ensureUtteranceCountAtLeast(2);
+        }
+        saveCurrentScore();
+        if (_onScoreChanged) _onScoreChanged();
+      });
+    }
+
+    const timingQuality = document.getElementById('timing-quality');
+    if (timingQuality) {
+      timingQuality.addEventListener('change', () => {
+        saveCurrentScore();
+        if (_onScoreChanged) _onScoreChanged();
       });
     }
   }
@@ -143,9 +172,11 @@ const ScoringUI = (() => {
         if (code === 'DA_FC' || code === 'DA_SC') {
           highlightScoreButton(1);
           ensureUtteranceCountAtLeast(2);
+          setProductionType('double_answer');
         } else if (code === 'DA_IC') {
           highlightScoreButton(0);
           ensureUtteranceCountAtLeast(2);
+          setProductionType('double_answer');
         }
         saveCurrentScore();
         if (_onScoreChanged) _onScoreChanged();
@@ -160,6 +191,11 @@ const ScoringUI = (() => {
     if (current >= count) return;
     select.value = String(count);
     renderUtteranceControls(count, WaveformViewer.getCurrentUtteranceMarkersMs());
+  }
+
+  function setProductionType(value) {
+    const select = document.getElementById('production-type');
+    if (select) select.value = value;
   }
 
   function getUtteranceCount() {
@@ -193,6 +229,7 @@ const ScoringUI = (() => {
           <label for="utterance-ms-input-${index}">U${n} (ms):</label>
           <input type="number" id="utterance-ms-input-${index}" step="0.1" min="0" value="${value}">
           <button type="button" id="utterance-click-${index}" class="btn btn-sm btn-marker-click" data-utterance-action="click" data-index="${index}" title="波形クリックで U${n} を設定">U${n} Click</button>
+          <button type="button" class="btn btn-sm" data-utterance-action="copy_onset" data-index="${index}">Set Onset</button>
           <button type="button" class="btn btn-sm" data-utterance-action="apply" data-index="${index}">Apply</button>
           <button type="button" class="btn btn-sm" data-utterance-action="clear" data-index="${index}">Clear</button>
         </div>
@@ -295,6 +332,10 @@ const ScoringUI = (() => {
         existingScore.offsetMs != null ? existingScore.offsetMs.toFixed(1) : '';
       const doubleAnswer = document.getElementById('double-answer-code');
       if (doubleAnswer) doubleAnswer.value = existingScore.doubleAnswerCode || '';
+      const productionType = document.getElementById('production-type');
+      if (productionType) productionType.value = existingScore.productionType || inferProductionType(existingScore);
+      const timingQuality = document.getElementById('timing-quality');
+      if (timingQuality) timingQuality.value = existingScore.timingQuality || 'clear';
       // Update status display
       if (existingScore.onsetStatus) {
         statusEl.textContent = ONSET_STATUS_LABELS[existingScore.onsetStatus] || existingScore.onsetStatus;
@@ -313,6 +354,10 @@ const ScoringUI = (() => {
       if (offsetInput) offsetInput.value = '';
       const doubleAnswer = document.getElementById('double-answer-code');
       if (doubleAnswer) doubleAnswer.value = '';
+      const productionType = document.getElementById('production-type');
+      if (productionType) productionType.value = 'single';
+      const timingQuality = document.getElementById('timing-quality');
+      if (timingQuality) timingQuality.value = 'clear';
     }
 
     // Onset click-to-set mode
@@ -405,6 +450,10 @@ const ScoringUI = (() => {
     const notes = document.getElementById('trial-notes').value;
     const doubleAnswerEl = document.getElementById('double-answer-code');
     const doubleAnswerCode = doubleAnswerEl ? doubleAnswerEl.value : '';
+    const productionTypeEl = document.getElementById('production-type');
+    const productionType = productionTypeEl ? productionTypeEl.value : 'single';
+    const timingQualityEl = document.getElementById('timing-quality');
+    const timingQuality = timingQualityEl ? timingQualityEl.value : 'clear';
     const utteranceCount = getUtteranceCount();
     let onsetMs = WaveformViewer.getCurrentOnsetMs();
     let utteranceMarkersMs = utteranceCount > 1
@@ -420,7 +469,8 @@ const ScoringUI = (() => {
 
     const offsetMs = WaveformViewer.getCurrentOffsetMs();
     const hasData = accuracy != null || onsetStatus != null || notes.trim() ||
-      doubleAnswerCode || utteranceCount !== 1 || onsetMs != null || firstSpeechMs != null || offsetMs != null;
+      doubleAnswerCode || productionType !== 'single' || timingQuality !== 'clear' ||
+      utteranceCount !== 1 || onsetMs != null || firstSpeechMs != null || offsetMs != null;
     if (!hasData) return;
 
     State.setScore(_currentParticipant.id, _currentTrial.trial, {
@@ -431,9 +481,54 @@ const ScoringUI = (() => {
       utteranceMarkersMs,
       offsetMs,
       onsetStatus,
+      productionType,
+      timingQuality,
       doubleAnswerCode,
       notes
     });
+  }
+
+  function inferProductionType(score) {
+    if (!score) return 'single';
+    if (score.doubleAnswerCode) return 'double_answer';
+    if (score.utteranceCount && score.utteranceCount > 1) return 'other';
+    return 'single';
+  }
+
+  function getCurrentScoreSnapshot() {
+    return {
+      accuracy: getActiveScore(),
+      onsetStatus: getActiveOnsetStatus(),
+      onsetMs: WaveformViewer.getCurrentOnsetMs(),
+      offsetMs: WaveformViewer.getCurrentOffsetMs(),
+      utteranceCount: getUtteranceCount(),
+      utteranceMarkersMs: WaveformViewer.getCurrentUtteranceMarkersMs(),
+      productionType: document.getElementById('production-type')?.value || 'single',
+      timingQuality: document.getElementById('timing-quality')?.value || 'clear'
+    };
+  }
+
+  function getCompletionIssues() {
+    const score = getCurrentScoreSnapshot();
+    const issues = [];
+    const isNR = score.accuracy === 'NR' || isNoSpeechStatus(score.onsetStatus);
+
+    if (score.accuracy == null) issues.push('Accuracy');
+    if (!isNR) {
+      if (score.onsetMs == null) issues.push('Onset');
+      if (score.offsetMs == null) issues.push('Offset');
+      if (score.onsetMs != null && score.offsetMs != null && score.offsetMs < score.onsetMs) {
+        issues.push('Offset < Onset');
+      }
+      if (score.utteranceCount > 1) {
+        const missing = score.utteranceMarkersMs
+          .slice(0, score.utteranceCount)
+          .some(ms => ms == null || isNaN(ms));
+        if (missing) issues.push('U markers');
+      }
+    }
+
+    return issues;
   }
 
   function scoreByKey(key) {
@@ -448,6 +543,7 @@ const ScoringUI = (() => {
 
   return {
     init, renderTrial, setAccuracyScore, handleOnsetAction,
-    saveCurrentScore, scoreByKey, confirmOnset, getActiveScore, getActiveOnsetStatus
+    saveCurrentScore, scoreByKey, confirmOnset, getActiveScore, getActiveOnsetStatus,
+    getCompletionIssues
   };
 })();

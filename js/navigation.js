@@ -10,6 +10,7 @@ const Navigation = (() => {
   let _tIndex = 0;
   let _onNavigate = null;
   let _audioCache = new Map();
+  let _pendingIncompleteKey = null;
 
   let _initialized = false;
   let _sessionFilter = null;   // null = all, 1-5 = specific session
@@ -77,6 +78,7 @@ const Navigation = (() => {
    * tIndex refers to position within filtered view if filter is active.
    */
   async function navigate(pIndex, tIndex) {
+    _pendingIncompleteKey = null;
     const oldPIndex = _pIndex;
     _pIndex = pIndex;
 
@@ -138,6 +140,17 @@ const Navigation = (() => {
     ScoringUI.saveCurrentScore();
     const participant = getCurrentParticipant();
     if (!participant) return;
+
+    const currentTrial = getCurrentTrialForPosition(participant);
+    const issues = ScoringUI.getCompletionIssues();
+    const issueKey = currentTrial
+      ? `${participant.id}_${currentTrial.trial}_${issues.join('|')}`
+      : `${participant.id}_${_tIndex}_${issues.join('|')}`;
+    if (issues.length && _pendingIncompleteKey !== issueKey) {
+      _pendingIncompleteKey = issueKey;
+      showIncompleteMessage(issues);
+      return;
+    }
 
     const count = getFilteredCount();
     if (_tIndex < count - 1) {
@@ -229,6 +242,17 @@ const Navigation = (() => {
     setTimeout(() => toast.remove(), 3000);
   }
 
+  function showIncompleteMessage(issues) {
+    const existing = document.querySelector('.incomplete-toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'all-scored-toast incomplete-toast';
+    toast.textContent = `未入力または要確認: ${issues.join(', ')}。もう一度 Next/Enter で進みます。`;
+    toast.style.background = 'var(--warning)';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+  }
+
   function getCurrentParticipant() {
     const pid = _participantIds[_pIndex];
     return _participantData.get(pid) || null;
@@ -237,7 +261,12 @@ const Navigation = (() => {
   function getCurrentTrial() {
     const p = getCurrentParticipant();
     if (!p) return null;
-    return p.trials[_tIndex];
+    return getCurrentTrialForPosition(p);
+  }
+
+  function getCurrentTrialForPosition(participant) {
+    const actualIdx = (_filteredIndices && participant) ? _filteredIndices[_tIndex] : _tIndex;
+    return participant ? participant.trials[actualIdx] : null;
   }
 
   function updateIndicators() {

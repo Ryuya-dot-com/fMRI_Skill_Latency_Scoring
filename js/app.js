@@ -216,6 +216,7 @@ const App = (() => {
 
       // Export buttons
       document.getElementById('export-csv').addEventListener('click', () => Export.exportAllCSV(_currentDataset));
+      document.getElementById('export-events-csv').addEventListener('click', () => Export.exportEventsCSV(_currentDataset));
       document.getElementById('export-json').addEventListener('click', () => Export.exportJSON());
       document.getElementById('export-participant').addEventListener('click', () => Export.exportCurrentParticipant(_currentDataset));
 

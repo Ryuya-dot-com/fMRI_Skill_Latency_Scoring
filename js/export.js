@@ -65,6 +65,14 @@ const Export = (() => {
     };
   }
 
+  function inferProductionType(score) {
+    if (!score) return 'single';
+    if (score.productionType) return score.productionType;
+    if (score.doubleAnswerCode) return 'double_answer';
+    if (score.utteranceCount && score.utteranceCount > 1) return 'other';
+    return 'single';
+  }
+
   function generateParticipantRows(participant, dataset, state) {
     return participant.trials.map(trial => {
       const scoreKey = `${participant.id}_${trial.trial}`;
@@ -100,6 +108,8 @@ const Export = (() => {
         item_repetition: trial.itemRepetition != null ? trial.itemRepetition : '',
         rule_repetition: trial.ruleRepetition != null ? trial.ruleRepetition : '',
         accuracy_score: score.accuracy != null ? score.accuracy : '',
+        production_type: inferProductionType(score),
+        timing_quality: score.timingQuality || 'clear',
         utterance_count: score.utteranceCount != null ? score.utteranceCount : '',
         utterance_onsets_ms: (!isNR && roundedUtteranceMarkers.length) ? roundedUtteranceMarkers.join(';') : '',
         onset_ms_rater: (!isNR && score.onsetMs != null) ? Math.round(score.onsetMs * 1000) / 1000 : '',
@@ -172,7 +182,8 @@ const Export = (() => {
       'suffix', 'suffix_label', 'rule_type', 'rule_id',
       'stim_onset_s', 'stim_duration_s',
       'repetition', 'total_repetition', 'item_repetition', 'rule_repetition',
-      'accuracy_score', 'utterance_count', 'utterance_onsets_ms',
+      'accuracy_score', 'production_type', 'timing_quality',
+      'utterance_count', 'utterance_onsets_ms',
       'onset_ms_rater', 'first_speech_ms_rater', 'onset_status',
       'offset_ms_rater',
       'pre_speech_onset_s', 'pre_speech_duration_s',
@@ -211,11 +222,112 @@ const Export = (() => {
     downloadBlob(csv, `onset_scoring_${state.raterId}_${ts}.csv`, 'text/csv');
   }
 
+  function generateEventRows(participant, dataset, state) {
+    const rows = [];
+    for (const trial of participant.trials) {
+      const scoreKey = `${participant.id}_${trial.trial}`;
+      const score = state.scores[scoreKey] || {};
+      const isNR = score.accuracy === 'NR';
+      const timing = buildTimingFields(score, trial, isNR);
+      const productionType = inferProductionType(score);
+      const timingQuality = score.timingQuality || 'clear';
+      const base = {
+        rater_id: state.raterId,
+        participant_id: participant.id,
+        trial: trial.trial,
+        session: trial.session,
+        session_trial: trial.sessionTrial != null ? trial.sessionTrial : '',
+        picture_label: trial.pictureLabel,
+        sprang_form: trial.sprangForm,
+        accuracy_score: score.accuracy != null ? score.accuracy : '',
+        production_type: productionType,
+        timing_quality: timingQuality,
+        double_answer_code: score.doubleAnswerCode || '',
+        timing_valid: timing.timing_valid,
+        timing_issue: timing.timing_issue,
+        audio_file: trial.audioFile || '',
+        notes: score.notes || ''
+      };
+
+      const addEvent = (eventType, eventIndex, onsetS, durationS, source) => {
+        rows.push({
+          ...base,
+          event_type: eventType,
+          event_index: eventIndex,
+          onset_s: onsetS,
+          duration_s: durationS,
+          source
+        });
+      };
+
+      const utteranceMarkers = Array.isArray(score.utteranceMarkersMs)
+        ? score.utteranceMarkersMs
+        : (score.firstSpeechMs != null ? [score.firstSpeechMs] : []);
+      if (!isNR) {
+        utteranceMarkers.forEach((ms, index) => {
+          if (ms != null && !isNaN(ms)) {
+            addEvent('utterance_start', index + 1, roundSec(ms), 0, `U${index + 1}`);
+          }
+        });
+      }
+
+      if (timing.timing_valid === 1) {
+        addEvent('pre_speech', 1, timing.pre_speech_onset_s, timing.pre_speech_duration_s, 'onset_ms_rater');
+        addEvent('speech', 1, timing.speech_onset_s_rater, timing.speech_duration_s_rater, 'onset_offset_rater');
+        if (timing.post_speech_duration_s !== '') {
+          addEvent('post_speech', 1, timing.post_speech_onset_s, timing.post_speech_duration_s, 'offset_recording_duration');
+        }
+      } else if (isNR && trial.recordingDurationS != null) {
+        addEvent('no_response', 1, 0, trial.recordingDurationS, 'recording_duration');
+      } else if (timing.timing_issue) {
+        addEvent('timing_issue', 1, '', '', timing.timing_issue);
+      }
+    }
+    return rows;
+  }
+
+  async function exportEventsCSV(dataset) {
+    const state = State.get();
+    if (!state) return;
+
+    const headers = [
+      'rater_id', 'participant_id', 'trial', 'session', 'session_trial',
+      'picture_label', 'sprang_form', 'accuracy_score', 'production_type',
+      'timing_quality', 'double_answer_code', 'event_type', 'event_index',
+      'onset_s', 'duration_s', 'source', 'timing_valid', 'timing_issue',
+      'audio_file', 'notes'
+    ];
+
+    const csvRows = [headers.join(',')];
+    for (const pid of state.assignedParticipants) {
+      let participant;
+      try {
+        participant = await CsvLoader.loadParticipant(dataset.id, pid);
+      } catch (e) {
+        console.warn(`Failed to load participant ${pid} for events export`);
+        continue;
+      }
+
+      const rows = generateEventRows(participant, dataset, state);
+      for (const row of rows) {
+        csvRows.push(headers.map(h => {
+          const val = row[h];
+          if (val === '' || val == null) return '';
+          return escapeCSV(String(val));
+        }).join(','));
+      }
+    }
+
+    const csv = csvRows.join('\n');
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    downloadBlob(csv, `onset_events_${state.raterId}_${ts}.csv`, 'text/csv');
+  }
+
   function exportJSON() {
     const state = State.get();
     if (!state) return;
     const json = JSON.stringify({
-      exportVersion: '2.1.0',
+      exportVersion: '2.2.0',
       exportedAt: new Date().toISOString(),
       raterId: state.raterId,
       datasetId: state.datasetId,
@@ -258,6 +370,6 @@ const Export = (() => {
 
   return {
     showParticipantExportPopup, downloadParticipantExcel,
-    exportCurrentParticipant, exportAllCSV, exportJSON
+    exportCurrentParticipant, exportAllCSV, exportEventsCSV, exportJSON
   };
 })();

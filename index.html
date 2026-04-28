@@ -174,12 +174,29 @@
           <button class="btn btn-score" data-score="1" title="Correct (key: 1)">1</button>
         </div>
         <div class="double-answer-control">
+          <label for="production-type">Production type:</label>
+          <select id="production-type">
+            <option value="single" selected>single</option>
+            <option value="false_start">false_start</option>
+            <option value="double_answer">double_answer</option>
+            <option value="self_correction">self_correction</option>
+            <option value="other">other</option>
+          </select>
           <label for="double-answer-code">Double answer:</label>
           <select id="double-answer-code">
             <option value="">None</option>
             <option value="DA_FC">DA_FC</option>
             <option value="DA_SC">DA_SC</option>
             <option value="DA_IC">DA_IC</option>
+          </select>
+          <label for="timing-quality">Timing quality:</label>
+          <select id="timing-quality">
+            <option value="clear" selected>clear</option>
+            <option value="uncertain">uncertain</option>
+            <option value="low_volume">low_volume</option>
+            <option value="noise_overlap">noise_overlap</option>
+            <option value="clipped">clipped</option>
+            <option value="other">other</option>
           </select>
         </div>
         <div id="score-hint" class="score-hint">NR = 無回答, 0 = 不正確, 1 = 正確</div>
@@ -204,6 +221,7 @@
     <footer class="scoring-footer">
       <button id="export-participant" class="btn">Export Participant (.xlsx)</button>
       <button id="export-csv" class="btn">Export All (CSV)</button>
+      <button id="export-events-csv" class="btn">Export Events (CSV)</button>
       <button id="export-json" class="btn">Export JSON</button>
       <span id="save-status" class="save-status">Saved</span>
     </footer>
@@ -236,6 +254,7 @@
         <p>まず発話回数を選択します。1回がデフォルトで、2回以上を選ぶと U1, U2, U3, U4 の発話開始線を追加できます。</p>
         <p>赤い線は解析に使う Onset、青い線は Offset、U 線は複数発話や False Start の開始位置です。</p>
         <p>CSV には pre-speech / speech / post-speech の onset と duration が秒単位で出力されます。Speech duration は Offset - Onset で計算されます。</p>
+        <p>Export Events (CSV) は fMRI 解析向けの long format です。各試行を pre_speech, speech, post_speech, utterance_start に分けて出力します。</p>
         <p>False Start（例: gust.. Gustiando）がある場合は、U1 を最初の発声に置き、赤い Onset は最後の本回答に置いてください。</p>
         <p>2度完全な単語の発声があった場合は、赤い Onset は1回目の完全な単語の開始点に置いてください。</p>
         <h4>操作方法:</h4>
@@ -277,6 +296,8 @@
         <h4>Double Answer:</h4>
         <ul>
           <li>発話が2回あった場合は Double answer で DA_FC / DA_SC / DA_IC を選択する。</li>
+          <li>Production type は single / false_start / double_answer / self_correction / other から選択する。</li>
+          <li>Timing quality は clear をデフォルトとし、判断が難しい場合は uncertain などを選択する。</li>
           <li>DA_FC は1回目が正答、DA_SC は2回目が正答、DA_IC はどちらも不正答。</li>
           <li>DA_FC と DA_SC は Accuracy = 1、DA_IC は Accuracy = 0 として扱う。</li>
         </ul>
