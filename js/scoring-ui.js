@@ -224,11 +224,29 @@ const ScoringUI = (() => {
     return Number.isFinite(count) ? Math.max(1, Math.min(4, count)) : 1;
   }
 
-  function getScoreUtteranceMarkers(score) {
+  function getAdditionalMarkerCount(count) {
+    return Math.max(0, getUtteranceCountFromValue(count) - 1);
+  }
+
+  function getUtteranceCountFromValue(value) {
+    const count = parseInt(value, 10);
+    return Number.isFinite(count) ? Math.max(1, Math.min(4, count)) : 1;
+  }
+
+  function getAdditionalUtteranceMarkers(score) {
     if (!score) return [];
-    if (Array.isArray(score.utteranceMarkersMs)) return score.utteranceMarkersMs;
-    if (score.firstSpeechMs != null) return [score.firstSpeechMs];
-    return [];
+    const count = score.utteranceCount || (score.doubleAnswerCode ? 2 : 1);
+    const markerCount = getAdditionalMarkerCount(count);
+    if (markerCount === 0) return [];
+
+    let markers = Array.isArray(score.utteranceMarkersMs) ? score.utteranceMarkersMs.slice() : [];
+    if (markers.length > markerCount && score.onsetMs != null && Math.abs(markers[0] - score.onsetMs) < 5) {
+      markers = markers.slice(1);
+    }
+    if (!markers.length && score.firstSpeechMs != null && score.onsetMs != null && Math.abs(score.firstSpeechMs - score.onsetMs) >= 5) {
+      markers = [score.firstSpeechMs];
+    }
+    return markers.slice(0, markerCount);
   }
 
   function renderUtteranceControls(count, markers) {
@@ -241,9 +259,9 @@ const ScoringUI = (() => {
     }
 
     const values = markers || [];
-    container.innerHTML = Array.from({ length: count }, (_, index) => {
+    container.innerHTML = Array.from({ length: getAdditionalMarkerCount(count) }, (_, index) => {
       const value = values[index] != null ? Number(values[index]).toFixed(1) : '';
-      const n = index + 1;
+      const n = index + 2;
       return `
         <div class="utterance-marker-row">
           <label for="utterance-ms-input-${index}">U${n} (ms):</label>
@@ -258,19 +276,20 @@ const ScoringUI = (() => {
   }
 
   function ensureVisibleUtteranceMarkers(count) {
-    const markers = WaveformViewer.getCurrentUtteranceMarkersMs().slice(0, count);
+    const markerCount = getAdditionalMarkerCount(count);
+    const markers = WaveformViewer.getCurrentUtteranceMarkersMs().slice(0, markerCount);
     const onsetMs = WaveformViewer.getCurrentOnsetMs();
     const offsetMs = WaveformViewer.getCurrentOffsetMs();
     const startMs = onsetMs != null && !isNaN(onsetMs) ? onsetMs : 0;
     const hasSpeechWindow = offsetMs != null && !isNaN(offsetMs) && offsetMs > startMs;
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < markerCount; i++) {
       if (markers[i] != null && !isNaN(markers[i])) continue;
       if (hasSpeechWindow) {
-        const fraction = i / count;
+        const fraction = (i + 1) / count;
         markers[i] = startMs + (offsetMs - startMs) * fraction;
       } else {
-        markers[i] = startMs + (i * 500);
+        markers[i] = startMs + ((i + 1) * 500);
       }
     }
 
@@ -413,7 +432,7 @@ const ScoringUI = (() => {
       const utteranceCount = noResponseScore ? 1 : (existingScore.utteranceCount || (existingScore.doubleAnswerCode ? 2 : 1));
       const utteranceCountEl = document.getElementById('utterance-count');
       if (utteranceCountEl) utteranceCountEl.value = String(utteranceCount);
-      renderUtteranceControls(utteranceCount, getScoreUtteranceMarkers(existingScore));
+      renderUtteranceControls(utteranceCount, getAdditionalUtteranceMarkers(existingScore));
       const offsetInput = document.getElementById('offset-ms-input');
       if (offsetInput) offsetInput.value =
         !noResponseScore && existingScore.offsetMs != null ? existingScore.offsetMs.toFixed(1) : '';
@@ -551,13 +570,12 @@ const ScoringUI = (() => {
     const timingQualityEl = document.getElementById('timing-quality');
     const timingQuality = timingQualityEl ? timingQualityEl.value : 'clear';
     const utteranceCount = getUtteranceCount();
+    const additionalMarkerCount = getAdditionalMarkerCount(utteranceCount);
     let onsetMs = WaveformViewer.getCurrentOnsetMs();
     let utteranceMarkersMs = utteranceCount > 1
-      ? WaveformViewer.getCurrentUtteranceMarkersMs().slice(0, utteranceCount)
+      ? WaveformViewer.getCurrentUtteranceMarkersMs().slice(0, additionalMarkerCount)
       : [];
-    let firstSpeechMs = utteranceCount > 1
-      ? (utteranceMarkersMs[0] != null ? utteranceMarkersMs[0] : null)
-      : (onsetMs != null ? onsetMs : null);
+    let firstSpeechMs = onsetMs != null ? onsetMs : null;
     let offsetMs = WaveformViewer.getCurrentOffsetMs();
     let offsetStatus = getOffsetStatus();
 
@@ -636,9 +654,13 @@ const ScoringUI = (() => {
       }
       if (score.utteranceCount > 1) {
         const missing = score.utteranceMarkersMs
-          .slice(0, score.utteranceCount)
+          .slice(0, getAdditionalMarkerCount(score.utteranceCount))
           .some(ms => ms == null || isNaN(ms));
         if (missing) issues.push('U markers');
+        if (score.utteranceMarkersMs.length < getAdditionalMarkerCount(score.utteranceCount)) issues.push('U markers');
+        if (score.onsetMs != null && score.utteranceMarkersMs.some(ms => ms != null && !isNaN(ms) && ms <= score.onsetMs)) {
+          issues.push('U order');
+        }
         if (score.productionType === 'single') issues.push('Production type');
       }
       if (score.productionType === 'double_answer' && !score.doubleAnswerCode) {
@@ -663,7 +685,7 @@ const ScoringUI = (() => {
     init, renderTrial, setAccuracyScore, handleOnsetAction,
     saveCurrentScore, scoreByKey, confirmOnset, getActiveScore, getActiveOnsetStatus,
     handleOffsetChange, confirmOffset, setOffsetStatus, startOffsetClickSet,
-    isNoSpeechStatus, isNoResponseScore,
+    isNoSpeechStatus, isNoResponseScore, getAdditionalUtteranceMarkers,
     getCompletionIssues
   };
 })();

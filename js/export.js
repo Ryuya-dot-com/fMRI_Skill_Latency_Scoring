@@ -19,6 +19,7 @@ const Export = (() => {
     'utterance_marker_missing',
     'utterance_marker_out_of_range',
     'utterance_marker_order',
+    'utterance_marker_before_onset',
     'double_answer_code_missing'
   ]);
 
@@ -32,20 +33,33 @@ const Export = (() => {
 
   function getFirstSpeechMs(score, isNR) {
     if (isNR) return null;
-    if (score.firstSpeechMs != null) return score.firstSpeechMs;
-    if (Array.isArray(score.utteranceMarkersMs) && score.utteranceMarkersMs[0] != null) {
-      return score.utteranceMarkersMs[0];
-    }
     return score.onsetMs != null ? score.onsetMs : null;
   }
 
-  function getUtteranceMarkers(score, isNR) {
+  function getAdditionalMarkerCount(score) {
+    const count = score.utteranceCount || (score.doubleAnswerCode ? 2 : 1);
+    return Math.max(0, Math.min(4, count) - 1);
+  }
+
+  function getAdditionalUtteranceMarkers(score, isNR) {
     if (isNR) return [];
-    if (Array.isArray(score.utteranceMarkersMs) && score.utteranceMarkersMs.length) {
-      return score.utteranceMarkersMs;
+    const markerCount = getAdditionalMarkerCount(score);
+    if (markerCount === 0) return [];
+
+    let markers = Array.isArray(score.utteranceMarkersMs) ? score.utteranceMarkersMs.slice() : [];
+    if (markers.length > markerCount && score.onsetMs != null && Math.abs(markers[0] - score.onsetMs) < 5) {
+      markers = markers.slice(1);
     }
+    if (!markers.length && score.firstSpeechMs != null && score.onsetMs != null && Math.abs(score.firstSpeechMs - score.onsetMs) >= 5) {
+      markers = [score.firstSpeechMs];
+    }
+    return markers.slice(0, markerCount);
+  }
+
+  function getUtteranceMarkers(score, isNR) {
     const firstSpeechMs = getFirstSpeechMs(score, isNR);
-    return firstSpeechMs != null ? [firstSpeechMs] : [];
+    const additionalMarkers = getAdditionalUtteranceMarkers(score, isNR);
+    return firstSpeechMs != null ? [firstSpeechMs, ...additionalMarkers] : additionalMarkers;
   }
 
   function hasScoreData(score) {
@@ -69,7 +83,7 @@ const Export = (() => {
     const productionType = inferProductionType(score);
     const timingQuality = score.timingQuality || 'clear';
     const utteranceCount = score.utteranceCount || (score.doubleAnswerCode ? 2 : 1);
-    const utteranceMarkers = Array.isArray(score.utteranceMarkersMs) ? score.utteranceMarkersMs : [];
+    const utteranceMarkers = getAdditionalUtteranceMarkers(score, isNR);
     const recordingEndMs = trial.recordingDurationS != null ? trial.recordingDurationS * 1000 : null;
 
     if (!hasScoreData(score)) {
@@ -112,11 +126,12 @@ const Export = (() => {
       }
 
       if (utteranceCount > 1) {
-        const markers = utteranceMarkers.slice(0, utteranceCount);
-        if (markers.length < utteranceCount || markers.some(ms => ms == null || isNaN(ms))) {
+        const markerCount = getAdditionalMarkerCount(score);
+        const markers = utteranceMarkers.slice(0, markerCount);
+        if (markers.length < markerCount || markers.some(ms => ms == null || isNaN(ms))) {
           flags.push('utterance_marker_missing');
         }
-        const numericMarkers = markers.filter(ms => ms != null && !isNaN(ms));
+        const numericMarkers = [score.onsetMs, ...markers].filter(ms => ms != null && !isNaN(ms));
         if (recordingEndMs != null && numericMarkers.some(ms => ms < 0 || ms > recordingEndMs)) {
           flags.push('utterance_marker_out_of_range');
         }
@@ -126,8 +141,8 @@ const Export = (() => {
             break;
           }
         }
-        if (score.onsetMs != null && numericMarkers[0] != null && numericMarkers[0] > score.onsetMs + MARKER_TOLERANCE_MS) {
-          flags.push('first_speech_after_analysis_onset');
+        if (score.onsetMs != null && markers.some(ms => ms != null && !isNaN(ms) && ms <= score.onsetMs + MARKER_TOLERANCE_MS)) {
+          flags.push('utterance_marker_before_onset');
         }
         if (productionType === 'single') {
           flags.push('multi_utterance_single_type');

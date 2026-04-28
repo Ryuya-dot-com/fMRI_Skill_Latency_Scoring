@@ -342,10 +342,14 @@ const WaveformViewer = (() => {
 
   function updateUtteranceDisplay() {
     const values = _currentUtteranceMs
-      .map((ms, i) => ms != null ? `U${i + 1}: ${ms.toFixed(1)} ms` : null)
+      .map((ms, i) => ms != null ? `U${i + 2}: ${ms.toFixed(1)} ms` : null)
       .filter(Boolean);
     const el = document.getElementById('first-speech-display');
-    if (el) el.textContent = values.length ? `Utterances: ${values.join(', ')}` : 'Utterances: -- ms';
+    if (el) {
+      const onsetValue = _currentOnsetMs != null ? [`U1/Onset: ${_currentOnsetMs.toFixed(1)} ms`] : [];
+      const allValues = onsetValue.concat(values);
+      el.textContent = values.length ? `Utterances: ${allValues.join(', ')}` : 'Utterances: -- ms';
+    }
 
     _currentUtteranceMs.forEach((ms, index) => {
       const input = document.getElementById(`utterance-ms-input-${index}`);

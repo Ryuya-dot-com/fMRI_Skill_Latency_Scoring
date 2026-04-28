@@ -322,11 +322,9 @@ const App = (() => {
       const utteranceCount = existingScore && existingScore.utteranceCount
         ? existingScore.utteranceCount
         : (existingScore && existingScore.doubleAnswerCode ? 2 : 1);
-      const utteranceMarkers = existingScore && Array.isArray(existingScore.utteranceMarkersMs)
-        ? existingScore.utteranceMarkersMs
-        : (existingScore && existingScore.firstSpeechMs != null ? [existingScore.firstSpeechMs] : []);
+      const utteranceMarkers = ScoringUI.getAdditionalUtteranceMarkers(existingScore);
       if (!existingNoResponse && utteranceCount > 1) {
-        WaveformViewer.setUtteranceMarkers(utteranceMarkers.slice(0, utteranceCount));
+        WaveformViewer.setUtteranceMarkers(utteranceMarkers);
       } else {
         WaveformViewer.clearUtteranceMarkers();
       }
