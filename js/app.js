@@ -180,6 +180,11 @@ const App = (() => {
     });
     WaveformViewer.onOffsetChanged(() => {
       ScoringUI.saveCurrentScore();
+      showSaveStatus();
+    });
+    WaveformViewer.onFirstSpeechChanged(() => {
+      ScoringUI.saveCurrentScore();
+      showSaveStatus();
     });
 
     if (!_scoringListenersAttached) {
@@ -287,6 +292,8 @@ const App = (() => {
 
     // Clear onset display
     WaveformViewer.updateOnsetDisplay(null);
+    WaveformViewer.clearUtteranceMarkers();
+    WaveformViewer.updateOffsetDisplay(null);
 
     // Load audio
     const audioUrl = Navigation.getAudioUrl(trial);
@@ -306,6 +313,18 @@ const App = (() => {
         WaveformViewer.setOnsetMarker(trial.onset_ms_from_recording_start);
       } else {
         WaveformViewer.setOnsetMarker(0);
+      }
+
+      const utteranceCount = existingScore && existingScore.utteranceCount
+        ? existingScore.utteranceCount
+        : (existingScore && existingScore.doubleAnswerCode ? 2 : 1);
+      const utteranceMarkers = existingScore && Array.isArray(existingScore.utteranceMarkersMs)
+        ? existingScore.utteranceMarkersMs
+        : (existingScore && existingScore.firstSpeechMs != null ? [existingScore.firstSpeechMs] : []);
+      if (utteranceCount > 1) {
+        WaveformViewer.setUtteranceMarkers(utteranceMarkers.slice(0, utteranceCount));
+      } else {
+        WaveformViewer.clearUtteranceMarkers();
       }
 
       // Set offset marker from saved score or auto-detection

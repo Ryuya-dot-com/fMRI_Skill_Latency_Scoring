@@ -115,6 +115,7 @@
         <div id="waveform-minimap" class="waveform-minimap"></div>
         <div class="waveform-info">
           <span id="waveform-time">0.000s / 0.000s</span>
+          <span id="first-speech-display">Utterances: -- ms</span>
           <span id="onset-display">Onset: -- ms</span>
           <span id="offset-display">Offset: -- ms</span>
           <span id="duration-display">Duration: -- ms</span>
@@ -123,11 +124,16 @@
 
       <!-- Latency verification -->
       <div class="latency-section">
-        <h3>Voice Onset Timing</h3>
+        <h3>Timing Markers</h3>
         <div class="latency-info">
           <span>Auto-detected onset: <strong id="auto-onset-value">--</strong> ms</span>
           <span>Auto-detected offset: <strong id="auto-offset-value">--</strong> ms</span>
           <span>Status: <strong id="latency-status-display">--</strong></span>
+        </div>
+        <div class="marker-legend" aria-label="Marker legend">
+          <span><i class="legend-line legend-first"></i>Utterance starts</span>
+          <span><i class="legend-line legend-onset"></i>Onset</span>
+          <span><i class="legend-line legend-offset"></i>Offset</span>
         </div>
         <div class="latency-controls">
           <button id="onset-confirm" class="btn btn-onset" data-status="confirmed" title="Confirm (C)">Confirm</button>
@@ -139,13 +145,23 @@
           <button id="onset-no-speech-nonlexical" class="btn btn-onset btn-onset-nospeech" data-status="no_speech_nonlexical" title="非語彙音 — 咳・息・舌打ちのみ (G)">非語彙音</button>
         </div>
         <div class="onset-manual-input">
+          <div class="utterance-count-control">
+            <label for="utterance-count">Utterances:</label>
+            <select id="utterance-count">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+          <div id="utterance-marker-controls" class="utterance-marker-controls"></div>
           <label for="onset-ms-input">Onset (ms):</label>
           <input type="number" id="onset-ms-input" step="0.1" min="0">
           <button id="onset-ms-apply" class="btn btn-sm">Apply</button>
-          <label for="offset-ms-input" style="margin-left:1rem">Offset (ms):</label>
+          <label for="offset-ms-input">Offset (ms):</label>
           <input type="number" id="offset-ms-input" step="0.1" min="0">
           <button id="offset-ms-apply" class="btn btn-sm">Apply</button>
-          <button id="offset-click-set" class="btn btn-sm" title="波形クリックで offset を設定 (O)">Offset Click</button>
+          <button id="offset-click-set" class="btn btn-sm btn-marker-click" title="波形クリックで offset を設定 (O)">Offset Click</button>
         </div>
       </div>
 
@@ -156,6 +172,15 @@
           <button class="btn btn-score" data-score="NR" title="No Response (key: 9)">NR</button>
           <button class="btn btn-score" data-score="0" title="Incorrect (key: 0)">0</button>
           <button class="btn btn-score" data-score="1" title="Correct (key: 1)">1</button>
+        </div>
+        <div class="double-answer-control">
+          <label for="double-answer-code">Double answer:</label>
+          <select id="double-answer-code">
+            <option value="">None</option>
+            <option value="DA_FC">DA_FC</option>
+            <option value="DA_SC">DA_SC</option>
+            <option value="DA_IC">DA_IC</option>
+          </select>
         </div>
         <div id="score-hint" class="score-hint">NR = 無回答, 0 = 不正確, 1 = 正確</div>
       </div>
@@ -192,31 +217,36 @@
     </div>
     <div class="instructions-body">
       <section>
-        <h3>1. 課題の概要</h3>
-        <p>参加者は動作を描いた絵を見て、対応するスプラング語の進行形を発話します。
-           各録音は4秒の絵提示＋3〜8秒のジッター（注視点）を含みます。</p>
-        <p>12種類の動詞 × 25回反復 = 300試行/参加者（5セッション × 60試行）</p>
+        <h3>1. 採点の流れ</h3>
+        <ol class="instructions-steps">
+          <li>Rater ID に採点者 ID を入力する。</li>
+          <li>採点する参加者 ID を選択して Start Scoring を押す。</li>
+          <li>Space キーで音声を再生・停止する。</li>
+          <li>Accuracy の NR / 0 / 1 で採点する。</li>
+          <li>発話の開始点を赤い Onset 線でセットする。</li>
+          <li>発話の終了点を青い Offset 線でセットする。</li>
+          <li>特記事項があれば Notes に記載する。</li>
+          <li>右矢印または Enter で次の試行に進む。前の試行は左矢印。</li>
+          <li>全試行が終わったら画面下の Export All (CSV) をクリックする。</li>
+        </ol>
       </section>
 
       <section>
-        <h3>2. 発話開始点 (Voice Onset)</h3>
-        <p>録音中の発話開始点（赤いマーカー）と発話終了点（青いマーカー）を確認・修正してください。</p>
-        <p>Offset（青マーカー）は音声末尾の無音区間から自動検出されます。ドラッグまたは手動入力で修正可能です。</p>
+        <h3>2. 発話タイミング</h3>
+        <p>まず発話回数を選択します。1回がデフォルトで、2回以上を選ぶと U1, U2, U3, U4 の発話開始線を追加できます。</p>
+        <p>赤い線は解析に使う Onset、青い線は Offset、U 線は複数発話や False Start の開始位置です。</p>
+        <p>False Start（例: gust.. Gustiando）がある場合は、U1 を最初の発声に置き、赤い Onset は最後の本回答に置いてください。</p>
+        <p>2度完全な単語の発声があった場合は、赤い Onset は1回目の完全な単語の開始点に置いてください。</p>
         <h4>操作方法:</h4>
         <ul>
           <li><strong>Confirm (C):</strong> 自動検出が正しい場合、そのまま承認</li>
           <li><strong>Correct (drag):</strong> マーカーをドラッグして位置を修正</li>
           <li><strong>Manual Set:</strong> 波形をクリックしてオンセットを手動設定</li>
+          <li><strong>U1/U2 Click:</strong> 波形をクリックして各発話の開始位置を設定</li>
+          <li><strong>Offset Click (O):</strong> 波形をクリックして発話終了位置を設定</li>
           <li><strong>無発話 (T):</strong> 録音中に一切の発話がない場合</li>
           <li><strong>機器不良 (F):</strong> 機材トラブルにより録音不良の場合</li>
           <li><strong>非語彙音 (G):</strong> 咳・息・舌打ちなど非語彙音のみの場合</li>
-        </ul>
-        <h4>よくあるずれのパターン:</h4>
-        <ul>
-          <li><strong>早すぎるオンセット:</strong> 環境音やマイクノイズが発話前に検出される場合</li>
-          <li><strong>遅すぎるオンセット:</strong> 小声の発話開始が見逃される場合</li>
-          <li><strong>息や舌打ちの誤検出:</strong> 発話前の呼吸音が検出される場合</li>
-          <li><strong>録音開始直後のノイズ:</strong> 最初の数百msにスキャナーノイズが入る場合</li>
         </ul>
       </section>
 
@@ -236,6 +266,19 @@
             <td><strong>無回答:</strong> 録音に発話が含まれていない場合（無発話 / 機器不良 / 非語彙音）</td>
           </tr>
         </table>
+        <h4>採点基準:</h4>
+        <ul>
+          <li>細かい音素・音韻単位での違い（例: [r]-[l], [t]-[tʃ], [s]-[ʃ]）は考慮せず、活用カテゴリーが合っていれば正答にする。</li>
+          <li>細かい音素・音韻の抜けがあっても正答にする。例: partiondo が pationdo と発音された場合。</li>
+          <li>明らかに違う単語や正答とかけ離れているものは不正答にする。</li>
+          <li>語尾は聞きづらい場合があるため、語尾が曖昧でも活用が合っていれば正答にする。例: sontiondo が sontion と聞こえる場合。</li>
+        </ul>
+        <h4>Double Answer:</h4>
+        <ul>
+          <li>発話が2回あった場合は Double answer で DA_FC / DA_SC / DA_IC を選択する。</li>
+          <li>DA_FC は1回目が正答、DA_SC は2回目が正答、DA_IC はどちらも不正答。</li>
+          <li>DA_FC と DA_SC は Accuracy = 1、DA_IC は Accuracy = 0 として扱う。</li>
+        </ul>
       </section>
 
       <section>
@@ -268,6 +311,7 @@
           <tr><td>→ / Enter</td><td>次の試行</td></tr>
           <tr><td>←</td><td>前の試行</td></tr>
           <tr><td>C</td><td>オンセット確認</td></tr>
+          <tr><td>O</td><td>波形クリックで Offset を設定</td></tr>
           <tr><td>T</td><td>無発話</td></tr>
           <tr><td>F</td><td>機器不良</td></tr>
           <tr><td>G</td><td>非語彙音</td></tr>
@@ -292,6 +336,7 @@
       <tr><td>&rarr; / Enter</td><td>Next trial</td></tr>
       <tr><td>&larr;</td><td>Previous trial</td></tr>
       <tr><td>C</td><td>Confirm onset</td></tr>
+      <tr><td>O</td><td>Click to set offset</td></tr>
       <tr><td>T</td><td>No speech (true)</td></tr>
       <tr><td>F</td><td>Tech failure</td></tr>
       <tr><td>G</td><td>Non-lexical only</td></tr>

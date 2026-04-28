@@ -9,13 +9,22 @@ const WaveformViewer = (() => {
   let timelinePlugin = null;
   let onsetRegion = null;
   let offsetRegion = null;
+  let utteranceRegions = [];
   let referenceRegion = null;
   let _onOnsetChanged = null;
   let _onOffsetChanged = null;
-  let _clickToSetMode = null; // null | 'onset' | 'offset'
+  let _onFirstSpeechChanged = null;
+  let _clickToSetMode = null; // null | 'onset' | 'offset' | 'utterance:N'
   let _currentOnsetMs = null;
   let _currentOffsetMs = null;
+  let _currentUtteranceMs = [];
   let _autoDetectedOffsetMs = null;
+  const UTTERANCE_COLORS = [
+    'rgba(255, 159, 67, 0.85)',
+    'rgba(156, 89, 255, 0.85)',
+    'rgba(38, 222, 129, 0.85)',
+    'rgba(69, 170, 242, 0.85)'
+  ];
 
   // Zoom state
   let _zoomLevel = 1;
@@ -86,6 +95,10 @@ const WaveformViewer = (() => {
       } else if (_clickToSetMode === 'offset') {
         setOffsetMarker(clickMs);
         if (_onOffsetChanged) _onOffsetChanged(clickMs);
+      } else if (_clickToSetMode && _clickToSetMode.startsWith('utterance:')) {
+        const index = parseInt(_clickToSetMode.split(':')[1], 10);
+        setUtteranceMarker(index, clickMs);
+        if (_onFirstSpeechChanged) _onFirstSpeechChanged(clickMs, index);
       }
     });
 
@@ -148,6 +161,7 @@ const WaveformViewer = (() => {
     _clickToSetMode = null;
     _currentOnsetMs = null;
     _currentOffsetMs = null;
+    _currentUtteranceMs = [];
     _autoDetectedOffsetMs = null;
     _zoomLevel = 1;
     updateZoomDisplay();
@@ -173,6 +187,7 @@ const WaveformViewer = (() => {
     }
     onsetRegion = null;
     offsetRegion = null;
+    utteranceRegions = [];
     referenceRegion = null;
   }
 
@@ -215,6 +230,66 @@ const WaveformViewer = (() => {
     updateDurationDisplay();
   }
 
+  function setUtteranceMarker(index, ms) {
+    if (index == null || index < 0) return;
+
+    if (utteranceRegions[index]) {
+      utteranceRegions[index].remove();
+      utteranceRegions[index] = null;
+    }
+
+    if (ms == null || isNaN(ms)) {
+      _currentUtteranceMs[index] = null;
+      updateUtteranceDisplay();
+      return;
+    }
+
+    _currentUtteranceMs[index] = ms;
+    const duration = wavesurfer.getDuration();
+    const startSec = ms / 1000;
+
+    if (startSec > duration) return;
+
+    utteranceRegions[index] = regionsPlugin.addRegion({
+      start: startSec,
+      end: Math.min(startSec + 0.005, duration),
+      color: UTTERANCE_COLORS[index % UTTERANCE_COLORS.length],
+      drag: true,
+      resize: false
+    });
+
+    utteranceRegions[index].on('update-end', () => {
+      const newMs = utteranceRegions[index].start * 1000;
+      _currentUtteranceMs[index] = newMs;
+      updateUtteranceDisplay();
+      if (_onFirstSpeechChanged) _onFirstSpeechChanged(newMs, index);
+    });
+
+    updateUtteranceDisplay();
+  }
+
+  function setUtteranceMarkers(markers) {
+    clearUtteranceMarkers();
+    (markers || []).forEach((ms, index) => {
+      if (ms != null && !isNaN(ms)) setUtteranceMarker(index, ms);
+      else _currentUtteranceMs[index] = null;
+    });
+    updateUtteranceDisplay();
+  }
+
+  function clearUtteranceMarkers() {
+    utteranceRegions.forEach(region => {
+      if (region) region.remove();
+    });
+    utteranceRegions = [];
+    _currentUtteranceMs = [];
+    updateUtteranceDisplay();
+  }
+
+  function setFirstSpeechMarker(ms) {
+    setUtteranceMarker(0, ms);
+  }
+
   function setReferenceMarker(ms, label) {
     if (ms == null || isNaN(ms)) return;
     if (referenceRegion) {
@@ -239,6 +314,26 @@ const WaveformViewer = (() => {
     if (el) el.textContent = ms != null ? `Onset: ${ms.toFixed(1)} ms` : 'Onset: -- ms';
     const input = document.getElementById('onset-ms-input');
     if (input && ms != null) input.value = ms.toFixed(1);
+  }
+
+  function updateFirstSpeechDisplay(ms) {
+    if (ms !== undefined) {
+      _currentUtteranceMs[0] = ms;
+    }
+    updateUtteranceDisplay();
+  }
+
+  function updateUtteranceDisplay() {
+    const values = _currentUtteranceMs
+      .map((ms, i) => ms != null ? `U${i + 1}: ${ms.toFixed(1)} ms` : null)
+      .filter(Boolean);
+    const el = document.getElementById('first-speech-display');
+    if (el) el.textContent = values.length ? `Utterances: ${values.join(', ')}` : 'Utterances: -- ms';
+
+    _currentUtteranceMs.forEach((ms, index) => {
+      const input = document.getElementById(`utterance-ms-input-${index}`);
+      if (input) input.value = ms != null ? ms.toFixed(1) : '';
+    });
   }
 
   // ── Offset Detection & Marker ──
@@ -330,7 +425,7 @@ const WaveformViewer = (() => {
   }
 
   /**
-   * @param {string|false} mode - 'onset', 'offset', or false to disable
+   * @param {string|false} mode - 'onset', 'offset', 'utterance:N', or false
    */
   function enableClickToSet(mode) {
     _clickToSetMode = mode || null;
@@ -358,10 +453,13 @@ const WaveformViewer = (() => {
   function isPlaying() { return wavesurfer ? wavesurfer.isPlaying() : false; }
   function getCurrentOnsetMs() { return _currentOnsetMs; }
   function getCurrentOffsetMs() { return _currentOffsetMs; }
+  function getCurrentFirstSpeechMs() { return _currentUtteranceMs[0] != null ? _currentUtteranceMs[0] : null; }
+  function getCurrentUtteranceMarkersMs() { return _currentUtteranceMs.slice(); }
   function getAutoDetectedOffsetMs() { return _autoDetectedOffsetMs; }
 
   function onOnsetChanged(fn) { _onOnsetChanged = fn; }
   function onOffsetChanged(fn) { _onOffsetChanged = fn; }
+  function onFirstSpeechChanged(fn) { _onFirstSpeechChanged = fn; }
 
   function destroy() {
     if (wavesurfer) { wavesurfer.destroy(); wavesurfer = null; }
@@ -370,10 +468,14 @@ const WaveformViewer = (() => {
   }
 
   return {
-    init, loadAudio, setOnsetMarker, setOffsetMarker, setReferenceMarker, clearMarkers,
+    init, loadAudio, setOnsetMarker, setOffsetMarker, setFirstSpeechMarker,
+    setUtteranceMarker, setUtteranceMarkers, clearUtteranceMarkers,
+    setReferenceMarker, clearMarkers,
     enableClickToSet, play, stop, playFromOnset, setPlaybackRate,
-    isPlaying, getCurrentOnsetMs, getCurrentOffsetMs, getAutoDetectedOffsetMs,
-    onOnsetChanged, onOffsetChanged, updateOnsetDisplay, updateOffsetDisplay, updateDurationDisplay,
+    isPlaying, getCurrentOnsetMs, getCurrentOffsetMs,
+    getCurrentFirstSpeechMs, getCurrentUtteranceMarkersMs, getAutoDetectedOffsetMs,
+    onOnsetChanged, onOffsetChanged, onFirstSpeechChanged,
+    updateOnsetDisplay, updateOffsetDisplay, updateFirstSpeechDisplay, updateUtteranceDisplay, updateDurationDisplay,
     zoomIn, zoomOut, zoomReset, destroy
   };
 })();

@@ -11,6 +11,12 @@ const Export = (() => {
       const scoreKey = `${participant.id}_${trial.trial}`;
       const score = state.scores[scoreKey] || {};
       const isNR = score.accuracy === 'NR';
+      const utteranceMarkers = Array.isArray(score.utteranceMarkersMs)
+        ? score.utteranceMarkersMs
+        : (score.firstSpeechMs != null ? [score.firstSpeechMs] : []);
+      const roundedUtteranceMarkers = utteranceMarkers
+        .map(ms => ms != null ? Math.round(ms * 1000) / 1000 : '')
+        .filter(ms => ms !== '');
 
       return {
         rater_id: state.raterId,
@@ -34,9 +40,13 @@ const Export = (() => {
         item_repetition: trial.itemRepetition != null ? trial.itemRepetition : '',
         rule_repetition: trial.ruleRepetition != null ? trial.ruleRepetition : '',
         accuracy_score: score.accuracy != null ? score.accuracy : '',
+        utterance_count: score.utteranceCount != null ? score.utteranceCount : '',
+        utterance_onsets_ms: (!isNR && roundedUtteranceMarkers.length) ? roundedUtteranceMarkers.join(';') : '',
         onset_ms_rater: (!isNR && score.onsetMs != null) ? Math.round(score.onsetMs * 1000) / 1000 : '',
+        first_speech_ms_rater: (!isNR && score.firstSpeechMs != null) ? Math.round(score.firstSpeechMs * 1000) / 1000 : '',
         onset_status: score.onsetStatus || '',
         offset_ms_rater: (!isNR && score.offsetMs != null) ? Math.round(score.offsetMs * 1000) / 1000 : '',
+        double_answer_code: score.doubleAnswerCode || '',
         audio_file: trial.audioFile || '',
         recording_duration_s: trial.recordingDurationS != null ? trial.recordingDurationS : '',
         duration_for_fmri_s: trial.durationForFmriS != null ? trial.durationForFmriS : '',
@@ -101,7 +111,9 @@ const Export = (() => {
       'suffix', 'suffix_label', 'rule_type', 'rule_id',
       'stim_onset_s', 'stim_duration_s',
       'repetition', 'total_repetition', 'item_repetition', 'rule_repetition',
-      'accuracy_score', 'onset_ms_rater', 'onset_status', 'offset_ms_rater',
+      'accuracy_score', 'utterance_count', 'utterance_onsets_ms',
+      'onset_ms_rater', 'first_speech_ms_rater', 'onset_status',
+      'offset_ms_rater', 'double_answer_code',
       'audio_file', 'recording_duration_s', 'duration_for_fmri_s', 'log_file',
       'jitter_ms', 'notes', 'scored_at'
     ];
@@ -137,7 +149,7 @@ const Export = (() => {
     const state = State.get();
     if (!state) return;
     const json = JSON.stringify({
-      exportVersion: '2.0.0',
+      exportVersion: '2.1.0',
       exportedAt: new Date().toISOString(),
       raterId: state.raterId,
       datasetId: state.datasetId,

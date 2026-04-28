@@ -30,6 +30,8 @@ const ScoringUI = (() => {
       setupOnsetButtons();
       setupOnsetManualInput();
       setupOffsetManualInput();
+      setupUtteranceControls();
+      setupDoubleAnswerField();
       setupNotesField();
     }
   }
@@ -83,9 +85,119 @@ const ScoringUI = (() => {
     const clickBtn = document.getElementById('offset-click-set');
     if (clickBtn) {
       clickBtn.addEventListener('click', () => {
-        handleOnsetAction('offset_manual');
+        setMarkerClickMode('offset', clickBtn.id);
       });
     }
+  }
+
+  function setupUtteranceControls() {
+    const countSelect = document.getElementById('utterance-count');
+    if (countSelect) {
+      countSelect.addEventListener('change', () => {
+        const count = getUtteranceCount();
+        if (count < 2) {
+          const da = document.getElementById('double-answer-code');
+          if (da) da.value = '';
+        }
+        renderUtteranceControls(count, WaveformViewer.getCurrentUtteranceMarkersMs());
+        if (count < 2) {
+          WaveformViewer.clearUtteranceMarkers();
+        }
+        saveCurrentScore();
+        if (_onScoreChanged) _onScoreChanged();
+      });
+    }
+
+    const container = document.getElementById('utterance-marker-controls');
+    if (container) {
+      container.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-utterance-action]');
+        if (!btn) return;
+
+        const index = parseInt(btn.dataset.index, 10);
+        const action = btn.dataset.utteranceAction;
+        if (action === 'apply') {
+          const input = document.getElementById(`utterance-ms-input-${index}`);
+          const ms = input ? parseFloat(input.value) : NaN;
+          if (!isNaN(ms) && ms >= 0) {
+            WaveformViewer.setUtteranceMarker(index, ms);
+            saveCurrentScore();
+            if (_onScoreChanged) _onScoreChanged();
+          }
+        } else if (action === 'click') {
+          setMarkerClickMode(`utterance:${index}`, btn.id);
+        } else if (action === 'clear') {
+          WaveformViewer.setUtteranceMarker(index, null);
+          saveCurrentScore();
+          if (_onScoreChanged) _onScoreChanged();
+        }
+      });
+    }
+  }
+
+  function setupDoubleAnswerField() {
+    const select = document.getElementById('double-answer-code');
+    if (select) {
+      select.addEventListener('change', () => {
+        const code = select.value;
+        if (code === 'DA_FC' || code === 'DA_SC') {
+          highlightScoreButton(1);
+          ensureUtteranceCountAtLeast(2);
+        } else if (code === 'DA_IC') {
+          highlightScoreButton(0);
+          ensureUtteranceCountAtLeast(2);
+        }
+        saveCurrentScore();
+        if (_onScoreChanged) _onScoreChanged();
+      });
+    }
+  }
+
+  function ensureUtteranceCountAtLeast(count) {
+    const select = document.getElementById('utterance-count');
+    if (!select) return;
+    const current = getUtteranceCount();
+    if (current >= count) return;
+    select.value = String(count);
+    renderUtteranceControls(count, WaveformViewer.getCurrentUtteranceMarkersMs());
+  }
+
+  function getUtteranceCount() {
+    const el = document.getElementById('utterance-count');
+    const count = el ? parseInt(el.value, 10) : 1;
+    return Number.isFinite(count) ? Math.max(1, Math.min(4, count)) : 1;
+  }
+
+  function getScoreUtteranceMarkers(score) {
+    if (!score) return [];
+    if (Array.isArray(score.utteranceMarkersMs)) return score.utteranceMarkersMs;
+    if (score.firstSpeechMs != null) return [score.firstSpeechMs];
+    return [];
+  }
+
+  function renderUtteranceControls(count, markers) {
+    const container = document.getElementById('utterance-marker-controls');
+    if (!container) return;
+
+    if (count < 2) {
+      container.innerHTML = '';
+      return;
+    }
+
+    const values = markers || [];
+    container.innerHTML = Array.from({ length: count }, (_, index) => {
+      const value = values[index] != null ? Number(values[index]).toFixed(1) : '';
+      const n = index + 1;
+      return `
+        <div class="utterance-marker-row">
+          <label for="utterance-ms-input-${index}">U${n} (ms):</label>
+          <input type="number" id="utterance-ms-input-${index}" step="0.1" min="0" value="${value}">
+          <button type="button" id="utterance-click-${index}" class="btn btn-sm btn-marker-click" data-utterance-action="click" data-index="${index}" title="波形クリックで U${n} を設定">U${n} Click</button>
+          <button type="button" class="btn btn-sm" data-utterance-action="apply" data-index="${index}">Apply</button>
+          <button type="button" class="btn btn-sm" data-utterance-action="clear" data-index="${index}">Clear</button>
+        </div>
+      `;
+    }).join('');
   }
 
   function setupNotesField() {
@@ -95,6 +207,17 @@ const ScoringUI = (() => {
         saveCurrentScore();
       });
     }
+  }
+
+  function setMarkerClickMode(mode, activeId) {
+    WaveformViewer.enableClickToSet(mode);
+    document.querySelectorAll('.btn-marker-click').forEach(btn => {
+      btn.classList.toggle('active', btn.id === activeId);
+    });
+  }
+
+  function clearMarkerClickButtons() {
+    document.querySelectorAll('.btn-marker-click').forEach(btn => btn.classList.remove('active'));
   }
 
   function setOnsetStatus(status) {
@@ -163,9 +286,15 @@ const ScoringUI = (() => {
       document.getElementById('trial-notes').value = existingScore.notes || '';
       document.getElementById('onset-ms-input').value =
         existingScore.onsetMs != null ? existingScore.onsetMs.toFixed(1) : '';
+      const utteranceCount = existingScore.utteranceCount || (existingScore.doubleAnswerCode ? 2 : 1);
+      const utteranceCountEl = document.getElementById('utterance-count');
+      if (utteranceCountEl) utteranceCountEl.value = String(utteranceCount);
+      renderUtteranceControls(utteranceCount, getScoreUtteranceMarkers(existingScore));
       const offsetInput = document.getElementById('offset-ms-input');
       if (offsetInput) offsetInput.value =
         existingScore.offsetMs != null ? existingScore.offsetMs.toFixed(1) : '';
+      const doubleAnswer = document.getElementById('double-answer-code');
+      if (doubleAnswer) doubleAnswer.value = existingScore.doubleAnswerCode || '';
       // Update status display
       if (existingScore.onsetStatus) {
         statusEl.textContent = ONSET_STATUS_LABELS[existingScore.onsetStatus] || existingScore.onsetStatus;
@@ -177,12 +306,18 @@ const ScoringUI = (() => {
       document.getElementById('trial-notes').value = '';
       document.getElementById('onset-ms-input').value =
         trial.onset_ms_from_recording_start != null ? trial.onset_ms_from_recording_start.toFixed(1) : '';
+      const utteranceCountEl = document.getElementById('utterance-count');
+      if (utteranceCountEl) utteranceCountEl.value = '1';
+      renderUtteranceControls(1, []);
       const offsetInput = document.getElementById('offset-ms-input');
       if (offsetInput) offsetInput.value = '';
+      const doubleAnswer = document.getElementById('double-answer-code');
+      if (doubleAnswer) doubleAnswer.value = '';
     }
 
     // Onset click-to-set mode
     WaveformViewer.enableClickToSet(false);
+    clearMarkerClickButtons();
   }
 
   function setAccuracyScore(score) {
@@ -201,17 +336,20 @@ const ScoringUI = (() => {
     highlightOnsetButton(status);
 
     if (status === 'manual') {
+      clearMarkerClickButtons();
       WaveformViewer.enableClickToSet('onset');
     } else if (status === 'offset_manual') {
-      WaveformViewer.enableClickToSet('offset');
+      setMarkerClickMode('offset', 'offset-click-set');
     } else {
       WaveformViewer.enableClickToSet(false);
+      clearMarkerClickButtons();
     }
 
     // Remove onset/offset markers when No Speech is selected
     if (isNoSpeechStatus(status)) {
       WaveformViewer.setOnsetMarker(null);
       WaveformViewer.setOffsetMarker(null);
+      WaveformViewer.clearUtteranceMarkers();
     }
 
     // Update status display
@@ -265,21 +403,35 @@ const ScoringUI = (() => {
     const accuracy = getActiveScore();
     const onsetStatus = getActiveOnsetStatus();
     const notes = document.getElementById('trial-notes').value;
+    const doubleAnswerEl = document.getElementById('double-answer-code');
+    const doubleAnswerCode = doubleAnswerEl ? doubleAnswerEl.value : '';
+    const utteranceCount = getUtteranceCount();
     let onsetMs = WaveformViewer.getCurrentOnsetMs();
+    let utteranceMarkersMs = utteranceCount > 1
+      ? WaveformViewer.getCurrentUtteranceMarkersMs().slice(0, utteranceCount)
+      : [];
+    let firstSpeechMs = utteranceMarkersMs[0] != null ? utteranceMarkersMs[0] : null;
 
     if (isNoSpeechStatus(onsetStatus)) {
       onsetMs = null;
+      firstSpeechMs = null;
+      utteranceMarkersMs = [];
     }
 
-    if (accuracy == null && onsetStatus == null) return;
-
     const offsetMs = WaveformViewer.getCurrentOffsetMs();
+    const hasData = accuracy != null || onsetStatus != null || notes.trim() ||
+      doubleAnswerCode || utteranceCount !== 1 || onsetMs != null || firstSpeechMs != null || offsetMs != null;
+    if (!hasData) return;
 
     State.setScore(_currentParticipant.id, _currentTrial.trial, {
       accuracy,
       onsetMs,
+      firstSpeechMs,
+      utteranceCount,
+      utteranceMarkersMs,
       offsetMs,
       onsetStatus,
+      doubleAnswerCode,
       notes
     });
   }
