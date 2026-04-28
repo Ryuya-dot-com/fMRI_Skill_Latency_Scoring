@@ -25,6 +25,12 @@ const WaveformViewer = (() => {
     'rgba(38, 222, 129, 0.85)',
     'rgba(69, 170, 242, 0.85)'
   ];
+  const MARKER_Z_INDEX = {
+    reference: 10,
+    utterance: 30,
+    offset: 50,
+    onset: 70
+  };
 
   // Zoom state
   let _zoomLevel = 1;
@@ -182,6 +188,13 @@ const WaveformViewer = (() => {
 
   // ── Markers ──
 
+  function styleMarkerRegion(region, className, zIndex, title) {
+    if (!region || !region.element) return;
+    region.element.classList.add(className);
+    region.element.style.zIndex = String(zIndex);
+    if (title) region.element.title = title;
+  }
+
   function clearMarkers() {
     if (regionsPlugin) {
       regionsPlugin.clearRegions();
@@ -218,6 +231,7 @@ const WaveformViewer = (() => {
       drag: true,
       resize: false
     });
+    styleMarkerRegion(onsetRegion, 'marker-onset', MARKER_Z_INDEX.onset, 'Onset');
 
     onsetRegion.on('update-end', () => {
       const newMs = onsetRegion.start * 1000;
@@ -258,6 +272,7 @@ const WaveformViewer = (() => {
       drag: true,
       resize: false
     });
+    styleMarkerRegion(utteranceRegions[index], 'marker-utterance', MARKER_Z_INDEX.utterance, `U${index + 1}`);
 
     utteranceRegions[index].on('update-end', () => {
       const newMs = utteranceRegions[index].start * 1000;
@@ -308,6 +323,7 @@ const WaveformViewer = (() => {
       drag: false,
       resize: false
     });
+    styleMarkerRegion(referenceRegion, 'marker-reference', MARKER_Z_INDEX.reference, label || 'Reference');
   }
 
   function updateOnsetDisplay(ms) {
@@ -393,6 +409,7 @@ const WaveformViewer = (() => {
       drag: true,
       resize: false
     });
+    styleMarkerRegion(offsetRegion, 'marker-offset', MARKER_Z_INDEX.offset, 'Offset');
 
     offsetRegion.on('update-end', () => {
       const newMs = offsetRegion.start * 1000;

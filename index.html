@@ -256,6 +256,7 @@
         <h3>2. 発話タイミング</h3>
         <p>まず発話回数を選択します。1回がデフォルトで、2回以上を選ぶと U1, U2, U3, U4 の発話開始線を追加できます。</p>
         <p>赤い線は解析に使う Onset、青い線は Offset、U 線は複数発話や False Start の開始位置です。</p>
+        <p>U 線と Onset が同じ位置に重なる場合は、解析に使う赤い Onset を優先表示します。</p>
         <p>CSV には pre-speech / speech / post-speech の onset と duration が秒単位で出力されます。Speech duration は Offset - Onset で計算されます。</p>
         <p>Export Events (CSV) は fMRI 解析向けの long format です。各試行を pre_speech, speech, post_speech, utterance_start に分けて出力します。</p>
         <p>Export QA (CSV) は未採点、未確認 offset、duration 要確認、DA コード不足など、解析前に確認すべき試行のみを出力します。</p>
