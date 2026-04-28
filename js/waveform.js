@@ -19,7 +19,11 @@ const WaveformViewer = (() => {
   let _currentOffsetMs = null;
   let _currentUtteranceMs = [];
   let _autoDetectedOffsetMs = null;
-  const ADDITIONAL_UTTERANCE_COLOR = 'rgba(255, 159, 67, 0.95)';
+  const ADDITIONAL_UTTERANCE_COLORS = [
+    'rgba(255, 159, 67, 0.95)',
+    'rgba(156, 89, 255, 0.95)',
+    'rgba(38, 222, 129, 0.95)'
+  ];
   const MARKER_Z_INDEX = {
     reference: 10,
     utterance: 30,
@@ -263,7 +267,7 @@ const WaveformViewer = (() => {
     utteranceRegions[index] = regionsPlugin.addRegion({
       start: startSec,
       end: Math.min(startSec + MARKER_WIDTH_SEC, duration),
-      color: ADDITIONAL_UTTERANCE_COLOR,
+      color: ADDITIONAL_UTTERANCE_COLORS[index] || ADDITIONAL_UTTERANCE_COLORS[ADDITIONAL_UTTERANCE_COLORS.length - 1],
       drag: true,
       resize: false
     });

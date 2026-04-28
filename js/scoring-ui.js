@@ -233,6 +233,14 @@ const ScoringUI = (() => {
     return Number.isFinite(count) ? Math.max(1, Math.min(4, count)) : 1;
   }
 
+  function updateMarkerLegend(count) {
+    const utteranceCount = getUtteranceCountFromValue(count);
+    document.querySelectorAll('[data-utterance-marker]').forEach(el => {
+      const markerNumber = parseInt(el.dataset.utteranceMarker, 10);
+      el.hidden = !Number.isFinite(markerNumber) || markerNumber > utteranceCount;
+    });
+  }
+
   function getAdditionalUtteranceMarkers(score) {
     if (!score) return [];
     const count = score.utteranceCount || (score.doubleAnswerCode ? 2 : 1);
@@ -252,6 +260,7 @@ const ScoringUI = (() => {
   function renderUtteranceControls(count, markers) {
     const container = document.getElementById('utterance-marker-controls');
     if (!container) return;
+    updateMarkerLegend(count);
 
     if (count < 2) {
       container.innerHTML = '';
@@ -264,7 +273,10 @@ const ScoringUI = (() => {
       const n = index + 2;
       return `
         <div class="utterance-marker-row">
-          <label for="utterance-ms-input-${index}">U${n} (ms):</label>
+          <label for="utterance-ms-input-${index}" class="utterance-row-label">
+            <span class="utterance-row-swatch utterance-color-${n}" aria-hidden="true"></span>
+            U${n} (ms):
+          </label>
           <input type="number" id="utterance-ms-input-${index}" step="0.1" min="0" value="${value}">
           <button type="button" id="utterance-click-${index}" class="btn btn-sm btn-marker-click" data-utterance-action="click" data-index="${index}" title="波形クリックで U${n} を設定">U${n} Click</button>
           <button type="button" class="btn btn-sm" data-utterance-action="copy_onset" data-index="${index}">Set Onset</button>
