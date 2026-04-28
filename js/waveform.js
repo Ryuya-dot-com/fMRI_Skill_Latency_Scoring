@@ -19,12 +19,7 @@ const WaveformViewer = (() => {
   let _currentOffsetMs = null;
   let _currentUtteranceMs = [];
   let _autoDetectedOffsetMs = null;
-  const UTTERANCE_COLORS = [
-    'rgba(255, 159, 67, 0.85)',
-    'rgba(156, 89, 255, 0.85)',
-    'rgba(38, 222, 129, 0.85)',
-    'rgba(69, 170, 242, 0.85)'
-  ];
+  const ADDITIONAL_UTTERANCE_COLOR = 'rgba(255, 159, 67, 0.95)';
   const MARKER_Z_INDEX = {
     reference: 10,
     utterance: 30,
@@ -268,11 +263,11 @@ const WaveformViewer = (() => {
     utteranceRegions[index] = regionsPlugin.addRegion({
       start: startSec,
       end: Math.min(startSec + MARKER_WIDTH_SEC, duration),
-      color: UTTERANCE_COLORS[index % UTTERANCE_COLORS.length],
+      color: ADDITIONAL_UTTERANCE_COLOR,
       drag: true,
       resize: false
     });
-    styleMarkerRegion(utteranceRegions[index], 'marker-utterance', MARKER_Z_INDEX.utterance, `U${index + 1}`);
+    styleMarkerRegion(utteranceRegions[index], 'marker-utterance', MARKER_Z_INDEX.utterance, `U${index + 2}`);
 
     utteranceRegions[index].on('update-end', () => {
       const newMs = utteranceRegions[index].start * 1000;
@@ -303,7 +298,7 @@ const WaveformViewer = (() => {
   }
 
   function setFirstSpeechMarker(ms) {
-    setUtteranceMarker(0, ms);
+    setOnsetMarker(ms);
   }
 
   function setReferenceMarker(ms, label) {
@@ -319,7 +314,7 @@ const WaveformViewer = (() => {
     referenceRegion = regionsPlugin.addRegion({
       start: startSec,
       end: Math.min(startSec + 0.005, duration),
-      color: 'rgba(50, 200, 50, 0.6)',
+      color: 'rgba(190, 200, 215, 0.35)',
       drag: false,
       resize: false
     });
@@ -335,7 +330,7 @@ const WaveformViewer = (() => {
 
   function updateFirstSpeechDisplay(ms) {
     if (ms !== undefined) {
-      _currentUtteranceMs[0] = ms;
+      _currentOnsetMs = ms;
     }
     updateUtteranceDisplay();
   }
@@ -348,7 +343,7 @@ const WaveformViewer = (() => {
     if (el) {
       const onsetValue = _currentOnsetMs != null ? [`U1/Onset: ${_currentOnsetMs.toFixed(1)} ms`] : [];
       const allValues = onsetValue.concat(values);
-      el.textContent = values.length ? `Utterances: ${allValues.join(', ')}` : 'Utterances: -- ms';
+      el.textContent = allValues.length ? `Utterances: ${allValues.join(', ')}` : 'Utterances: -- ms';
     }
 
     _currentUtteranceMs.forEach((ms, index) => {
@@ -476,7 +471,7 @@ const WaveformViewer = (() => {
   function isPlaying() { return wavesurfer ? wavesurfer.isPlaying() : false; }
   function getCurrentOnsetMs() { return _currentOnsetMs; }
   function getCurrentOffsetMs() { return _currentOffsetMs; }
-  function getCurrentFirstSpeechMs() { return _currentUtteranceMs[0] != null ? _currentUtteranceMs[0] : null; }
+  function getCurrentFirstSpeechMs() { return _currentOnsetMs; }
   function getCurrentUtteranceMarkersMs() { return _currentUtteranceMs.slice(); }
   function getAutoDetectedOffsetMs() { return _autoDetectedOffsetMs; }
 

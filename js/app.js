@@ -304,7 +304,7 @@ const App = (() => {
       if (generation !== _loadGeneration) return;
 
       // Set 4-second reference marker (picture display duration)
-      WaveformViewer.setReferenceMarker(4000);
+      WaveformViewer.setReferenceMarker(4000, '4 s reference');
 
       // Set onset marker from saved score, auto-detection, or default (0ms)
       const existingScore = State.getScore(participant.id, trial.trial);
