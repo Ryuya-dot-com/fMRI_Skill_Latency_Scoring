@@ -6,11 +6,71 @@ const Export = (() => {
 
   const _exportedPopups = new Set();
 
+  function roundMs(ms) {
+    return Math.round(ms * 1000) / 1000;
+  }
+
+  function roundSec(ms) {
+    return Math.round((ms / 1000) * 1000000) / 1000000;
+  }
+
+  function buildTimingFields(score, trial, isNR) {
+    const onsetMs = score.onsetMs;
+    const offsetMs = score.offsetMs;
+    const recordingEndMs = trial.recordingDurationS != null ? trial.recordingDurationS * 1000 : null;
+    const blank = {
+      pre_speech_onset_s: '',
+      pre_speech_duration_s: '',
+      speech_onset_s_rater: '',
+      speech_duration_s_rater: '',
+      post_speech_onset_s: '',
+      post_speech_duration_s: '',
+      speech_duration_ms_rater: '',
+      timing_valid: '',
+      timing_issue: ''
+    };
+
+    if (isNR) {
+      return { ...blank, timing_valid: 0, timing_issue: 'no_response' };
+    }
+    if (onsetMs == null && offsetMs == null) {
+      return blank;
+    }
+    if (onsetMs == null) {
+      return { ...blank, timing_valid: 0, timing_issue: 'missing_onset' };
+    }
+    if (offsetMs == null) {
+      return { ...blank, timing_valid: 0, timing_issue: 'missing_offset' };
+    }
+
+    const speechDurationMs = offsetMs - onsetMs;
+    if (speechDurationMs < 0) {
+      return { ...blank, timing_valid: 0, timing_issue: 'offset_before_onset' };
+    }
+    if (recordingEndMs != null && offsetMs > recordingEndMs) {
+      return { ...blank, timing_valid: 0, timing_issue: 'offset_after_recording' };
+    }
+
+    const postDurationMs = recordingEndMs != null ? Math.max(0, recordingEndMs - offsetMs) : null;
+    return {
+      pre_speech_onset_s: 0,
+      pre_speech_duration_s: roundSec(onsetMs),
+      speech_onset_s_rater: roundSec(onsetMs),
+      speech_duration_s_rater: roundSec(speechDurationMs),
+      post_speech_onset_s: roundSec(offsetMs),
+      post_speech_duration_s: postDurationMs != null ? roundSec(postDurationMs) : '',
+      speech_duration_ms_rater: roundMs(speechDurationMs),
+      timing_valid: 1,
+      timing_issue: ''
+    };
+  }
+
   function generateParticipantRows(participant, dataset, state) {
     return participant.trials.map(trial => {
       const scoreKey = `${participant.id}_${trial.trial}`;
       const score = state.scores[scoreKey] || {};
       const isNR = score.accuracy === 'NR';
+      const timingFields = buildTimingFields(score, trial, isNR);
       const utteranceMarkers = Array.isArray(score.utteranceMarkersMs)
         ? score.utteranceMarkersMs
         : (score.firstSpeechMs != null ? [score.firstSpeechMs] : []);
@@ -46,6 +106,7 @@ const Export = (() => {
         first_speech_ms_rater: (!isNR && score.firstSpeechMs != null) ? Math.round(score.firstSpeechMs * 1000) / 1000 : '',
         onset_status: score.onsetStatus || '',
         offset_ms_rater: (!isNR && score.offsetMs != null) ? Math.round(score.offsetMs * 1000) / 1000 : '',
+        ...timingFields,
         double_answer_code: score.doubleAnswerCode || '',
         audio_file: trial.audioFile || '',
         recording_duration_s: trial.recordingDurationS != null ? trial.recordingDurationS : '',
@@ -113,7 +174,12 @@ const Export = (() => {
       'repetition', 'total_repetition', 'item_repetition', 'rule_repetition',
       'accuracy_score', 'utterance_count', 'utterance_onsets_ms',
       'onset_ms_rater', 'first_speech_ms_rater', 'onset_status',
-      'offset_ms_rater', 'double_answer_code',
+      'offset_ms_rater',
+      'pre_speech_onset_s', 'pre_speech_duration_s',
+      'speech_onset_s_rater', 'speech_duration_s_rater',
+      'post_speech_onset_s', 'post_speech_duration_s',
+      'speech_duration_ms_rater', 'timing_valid', 'timing_issue',
+      'double_answer_code',
       'audio_file', 'recording_duration_s', 'duration_for_fmri_s', 'log_file',
       'jitter_ms', 'notes', 'scored_at'
     ];
